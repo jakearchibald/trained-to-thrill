@@ -7,13 +7,13 @@ app.engine('html', swig.renderFile);
 app.set('view cache', false);
 swig.setDefaults({ cache: false });
 
-app.use('/app-name/static', express.static(__dirname + '/../www/static'));
+app.use('/trained-to-thrill/static', express.static(__dirname + '/../www/static'));
 
-app.get(RegExp('^/(app-name)?$'), function(req, res) {
-  res.redirect('/app-name/');
+app.get(RegExp('^/(trained-to-thrill)?$'), function(req, res) {
+  res.redirect('/trained-to-thrill/');
 });
 
-app.get('/app-name/', function(req, res) {
+app.get('/trained-to-thrill/', function(req, res) {
   res.render('../www/index.html');
 });
 
