@@ -1,0 +1,5 @@
+@mixin transition($spec...) {
+  @each $prefix in -webkit-, '' {
+    #{$prefix}transition: $spec;
+  }
+}

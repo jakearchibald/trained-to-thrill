@@ -62,6 +62,7 @@
     overflow: hidden;
     position: relative;
     padding-top: 69.15%;
+    background: #E9E9E9;
     
 
     & img {
@@ -70,10 +71,18 @@
       left: 0;
       display: block;
       width: 100%;
+      opacity: 0;
+      @include transition(opacity 0.2s ease-out);
+
+      &.loaded {
+        opacity: 1;
+      }
       
       @supports (object-fit: cover) {
         height: 100%;
         object-fit: cover;
+        // hack because Chrome, it turns out, has bugs sometimes
+        -webkit-transform: translateZ(0);
       }
     }
   }
