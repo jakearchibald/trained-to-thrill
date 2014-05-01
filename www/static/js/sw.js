@@ -5,9 +5,15 @@ this.oninstall = function(event) {
     caches.add('static-v1', staticCache),
     staticCache.add(
       '/trained-to-thrill/',
-      '/trained-to-thrill/static/js/all.js',
       '/trained-to-thrill/static/css/all.css',
-      '/trained-to-thrill/static/imgs/logo.svg'
+      '/trained-to-thrill/static/js/es6-promise.js',
+      '/trained-to-thrill/static/js/utils.js',
+      '/trained-to-thrill/static/js/flickr.js',
+      '/trained-to-thrill/static/js/photos-template.js',
+      '/trained-to-thrill/static/js/app.js',
+      '/trained-to-thrill/static/js/sw.js',
+      '/trained-to-thrill/static/imgs/logo.svg',
+      '/trained-to-thrill/static/imgs/icon.png'
     )
   ]));
 };
