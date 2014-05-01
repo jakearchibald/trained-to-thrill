@@ -25,7 +25,7 @@
           title: photo.title,
           flickrUrl: '//www.flickr.com/photos/' + photo.owner + '/' + photo.id + '/',
           imgUrl: '//farm' + photo.farm + '.staticflickr.com/' + photo.server + '/' + photo.id + '_' + photo.secret + '_c.jpg',
-          description: photo.description._content
+          description: photo.description._content.trim()
         };
       });
     });
