@@ -3,3 +3,26 @@
     #{$prefix}transition: $spec;
   }
 }
+
+@mixin animation($spec...) {
+  @each $prefix in -webkit-, '' {
+    #{$prefix}animation: $spec;
+  }
+}
+
+@mixin transform($spec...) {
+  @each $prefix in -webkit-, '' {
+    #{$prefix}transform: $spec;
+  }
+}
+
+@mixin keyframes($name) {
+  @-webkit-keyframes $name { @content; }
+  @keyframes         $name { @content; }
+}
+
+@mixin max-width-max-content {
+  @each $prefix in -webkit-, -moz-, '' {
+    max-width: #{$prefix}max-content;
+  }
+}

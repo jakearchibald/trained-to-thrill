@@ -1,3 +1,7 @@
+html {
+  overflow-y: scroll;
+}
+
 body {
   margin: 0;
   font-family: sans-serif;
@@ -13,4 +17,20 @@ a:visited {
 
 a:hover {
   text-decoration: underline;
+}
+
+button.custom {
+  padding: 0;
+  margin: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  overflow: visible;
+  vertical-align: middle;
+  font-size: inherit;
+  width: auto;
+}
+button.custom::-moz-focus-inner { 
+  border: 0;
+  padding: 0;
 }
