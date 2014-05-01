@@ -51,7 +51,7 @@
   refreshButton.addEventListener('click', function(event) {
     this.blur();
     event.preventDefault();
-    refreshButton.classList.add('loading');
+    showSpinner();
     networkFetch().then(updatePage).catch(showConnectionError).then(hideSpinner);
   });
 
@@ -64,7 +64,7 @@
 
   var cachedFetchPromise = cachedFetch().then(function(data) {
     if (!networkWon) {
-      updatePage(response);
+      updatePage(data);
     }
   });
 
