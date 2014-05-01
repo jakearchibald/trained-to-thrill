@@ -4,13 +4,6 @@
     <title>{% block title %}{% endblock %}</title>
     <meta name="viewport" content="width=device-width, minimum-scale=1.0">
     <link rel="stylesheet" href="/trained-to-thrill/static/css/all.css">
-    <script>
-      document.addEventListener('load', function(event) {
-        if (event.target.tagName == 'IMG') {
-          event.target.classList.add('loaded');
-        }
-      }, true);
-    </script>
     {% block head %}{% endblock %}
   </head>
   <body>
