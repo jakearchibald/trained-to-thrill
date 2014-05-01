@@ -11,3 +11,42 @@ this.oninstall = function(event) {
     )
   ]));
 };
+
+this.onfetch = function(event) {
+  var requestURL = new URL(event.request.url);
+
+  if (requestURL.hostname == 'api.flickr.com') {
+    event.respondWith(flickrAPIResponse(event.request));
+  }
+  else if (/\.staticflickr\.com$/.test(requestURL.hostname)) {
+    event.respondWith(flickrImageResponse(event.request));
+  }
+  else {
+    respondWith(
+      caches.match(event.request).catch(function() {
+        return event.default();
+      })
+    );
+  }
+};
+
+function flickrAPIResponse(request) {
+  if (request.headers.has('x-use-cache')) {
+    return caches.match(request);
+  }
+  else {
+    var contentCache = new Cache();
+    caches.add('content', contentCache);
+    contentCache.add(request);
+    return fetch(request);
+  }
+}
+
+function flickrImageResponse(request) {
+  return caches.match(request).catch(function() {
+    caches.get('content').then(function() {
+      cache.add(request);
+    });
+    return fetch(request);
+  });
+}
