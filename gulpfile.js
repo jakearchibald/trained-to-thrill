@@ -86,7 +86,8 @@ gulp.task('build', ['clean', 'sass-build'], function() {
     "static/js/photos-template.js",
     "static/js/app.js",
     "static/js/sw.js",
-    "static/imgs/logo.svg"
+    "static/imgs/logo.svg",
+    "static/imgs/icon.png"
   ]).pipe(writeStream);
 });
 
