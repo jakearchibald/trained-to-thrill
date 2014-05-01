@@ -1,6 +1,15 @@
 {{#each this}}
-  <article>
-    <h1><a href="{{flickrUrl}}">{{title}}</a></h1>
-    <img src="{{imgUrl}}" alt="">
+  <article class="photo">
+    <h1>
+      <a href="{{flickrUrl}}">
+        <span class="main-photo">
+          <img src="{{imgUrl}}" alt="">
+        </span>
+        <span class="title">{{title}}</span>
+      </a>
+    </h1>
+    {{#if description}}
+      <p class="description">{{description}}</p>
+    {{/if}}
   </article>
 {{/each}}

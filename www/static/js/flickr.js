@@ -6,6 +6,7 @@ var apiUrl = 'https://api.flickr.com/services/rest/';
 function search(text, opts) {
   var params = {
     method: 'flickr.photos.search',
+    extras: 'description',
     format: 'json',
     api_key: apiKey,
     text: text,
@@ -24,7 +25,8 @@ function search(text, opts) {
       return {
         title: photo.title,
         flickrUrl: 'https://www.flickr.com/photos/' + photo.owner + '/' + photo.id + '/',
-        imgUrl: 'http://farm' + photo.farm + '.staticflickr.com/' + photo.server + '/' + photo.id + '_' + photo.secret + '_c.jpg'
+        imgUrl: 'http://farm' + photo.farm + '.staticflickr.com/' + photo.server + '/' + photo.id + '_' + photo.secret + '_c.jpg',
+        description: photo.description._content
       };
     });
   });

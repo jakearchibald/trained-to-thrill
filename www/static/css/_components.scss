@@ -4,13 +4,76 @@
     top: 0;
     left: 0;
     width: 100%;
-    background: #458D2E;
+    background: #DA50A8;
     overflow: hidden;
+    z-index: 10;
     
     & .logo {
       margin: 5px auto;
       display: block;
       width: 50px;
       height: 27px;
+    }
+  }
+
+// photo
+  .photos {
+    overflow: hidden;
+    margin: 37px 0 0;
+    padding: 0 1rem;
+  }
+  .photo {
+    border-radius: 5px;
+    background: #fff;
+    padding: 1rem;
+    margin: 1rem auto;
+    max-width: 800px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    
+    & h1 {
+      margin: 0;
+      
+      & a:link,
+      & a:visited {
+        color: #333;
+      }
+      & a:hover {
+        color: #CE46C8;
+        text-decoration: none;
+      }
+      & a:active {
+        color: #FF00EB;
+      }
+    }
+    & .title {
+      display: block;
+      margin: 1rem 0 0;
+      font-size: 1rem;
+      max-width: 570px;
+    }
+    & .description {
+      margin: 1rem 0 0;
+      font-size: 0.9rem;
+      max-width: 570px;
+    }
+  }
+  .main-photo {
+    display: block;
+    overflow: hidden;
+    position: relative;
+    padding-top: 69.15%;
+    
+
+    & img {
+      position: absolute;
+      top: 0;
+      left: 0;
+      display: block;
+      width: 100%;
+      
+      @supports (object-fit: cover) {
+        height: 100%;
+        object-fit: cover;
+      }
     }
   }
