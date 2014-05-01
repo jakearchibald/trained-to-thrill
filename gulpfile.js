@@ -71,7 +71,7 @@ gulp.task('clean', function() {
     .pipe(clean());
 });
 
-gulp.task('build', ['clean', 'sass-build', 'js-build'], function() {
+gulp.task('build', ['clean', 'sass-build'], function() {
   var server = app.listen(3000);
   var writeStream = gulp.dest('build/');
 
@@ -80,7 +80,14 @@ gulp.task('build', ['clean', 'sass-build', 'js-build'], function() {
   return urlSrc('http://localhost:3000/trained-to-thrill/', [
     '',
     'static/css/all.css',
-    'static/js/all.js'
+    "static/js/es6-promise.js",
+    "static/js/querystring.js",
+    "static/js/utils.js",
+    "static/js/flickr.js",
+    "static/js/photos-template.js",
+    "static/js/app.js",
+    "static/js/sw.js",
+    "static/imgs/logo.svg"
   ]).pipe(writeStream);
 });
 
