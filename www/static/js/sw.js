@@ -11,7 +11,6 @@ this.oninstall = function(event) {
       '/trained-to-thrill/static/js/flickr.js',
       '/trained-to-thrill/static/js/photos-template.js',
       '/trained-to-thrill/static/js/app.js',
-      '/trained-to-thrill/static/js/sw.js',
       '/trained-to-thrill/static/imgs/logo.svg',
       '/trained-to-thrill/static/imgs/icon.png'
     )
