@@ -81,7 +81,6 @@ gulp.task('build', ['clean', 'sass-build'], function() {
     '',
     'static/css/all.css',
     "static/js/es6-promise.js",
-    "static/js/querystring.js",
     "static/js/utils.js",
     "static/js/flickr.js",
     "static/js/photos-template.js",
