@@ -27,7 +27,7 @@ this.onfetch = function(event) {
     event.respondWith(flickrImageResponse(event.request));
   }
   else {
-    respondWith(
+    event.respondWith(
       caches.match(event.request).catch(function() {
         return event.default();
       })
