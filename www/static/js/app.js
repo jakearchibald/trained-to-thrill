@@ -22,14 +22,14 @@
   }
 
   function networkFetch() {
-    return flickr.search('train station', {
+    return flickr.search('rail', {
       headers: {}
     });
   }
 
   function cachedFetch() {
     if ('serviceWorker' in navigator && navigator.serviceWorker.active) {
-      return flickr.search('train station', {
+      return flickr.search('rail', {
         headers: {'x-use-cache': 'true'}
       });
     }
