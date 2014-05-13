@@ -28,13 +28,13 @@
   }
 
   function cachedFetch() {
-    if ('serviceWorker' in navigator && navigator.serviceWorker.active) {
+    if ('serviceWorker' in navigator && navigator.serviceWorker.current) {
       return flickr.search('rail', {
         headers: {'x-use-cache': 'true'}
       });
     }
     else {
-      return Promise.reject(Error("No active serviceWorker"));
+      return Promise.reject(Error("No current serviceWorker"));
     }
   }
 
