@@ -21,13 +21,13 @@
     photosEl.innerHTML = photosTemplate(data);
   }
 
-  function networkFetch() {
+  function getTrainPhotoData() {
     return flickr.search('rail', {
       headers: {}
     });
   }
 
-  function cachedFetch() {
+  function getCachedTrainPhotoData() {
     if ('serviceWorker' in navigator && navigator.serviceWorker.current) {
       return flickr.search('rail', {
         headers: {'x-use-cache': 'true'}
@@ -52,24 +52,24 @@
     this.blur();
     event.preventDefault();
     showSpinner();
-    networkFetch().then(updatePage).catch(showConnectionError).then(hideSpinner);
+    getTrainPhotoData().then(updatePage).catch(showConnectionError).then(hideSpinner);
   });
 
   // Initial load
-  var networkWon = false;
+  var showingLiveData = false;
 
-  var networkFetchPromise = networkFetch().then(updatePage).then(function() {
-    networkWon = true;
+  var liveDataPromise = getTrainPhotoData().then(updatePage).then(function() {
+    showingLiveData = true;
   });
 
-  var cachedFetchPromise = cachedFetch().then(function(data) {
-    if (!networkWon) {
+  var cachedDataPromise = getCachedTrainPhotoData().then(function(data) {
+    if (!showingLiveData) {
       updatePage(data);
     }
   });
 
-  networkFetchPromise.catch(function() {
-    return cachedFetchPromise;
+  liveDataPromise.catch(function() {
+    return cachedDataPromise;
   }).catch(showConnectionError).then(hideSpinner);
 
   // Add classes to fade-in images

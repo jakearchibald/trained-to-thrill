@@ -41,17 +41,18 @@ function flickrAPIResponse(request) {
   }
   else {
     var contentCache = new Cache();
-    caches.add('content', contentCache);
-    contentCache.add(request);
-    return fetch(request);
+    return caches.add('content', contentCache).then(function() {
+      contentCache.add(request);
+      return fetch(request);
+    });
   }
 }
 
 function flickrImageResponse(request) {
   return caches.match(request).catch(function() {
-    caches.get('content').then(function() {
+    return caches.get('content').then(function(cache) {
       cache.add(request);
+      return fetch(request);
     });
-    return fetch(request);
   });
 }
