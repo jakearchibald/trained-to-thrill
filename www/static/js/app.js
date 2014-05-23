@@ -1,4 +1,9 @@
 (function() {
+  // force https
+  if ((!location.port || location.port == "80") && location.protocol != 'https:') {
+    location.protocol = 'https:';
+  }
+
   var photosEl = document.querySelector('.photos');
   var refreshButton = document.querySelector('button.refresh');
   var errorEl = document.querySelector('.error-container');
