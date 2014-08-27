@@ -9,9 +9,11 @@ var hbsfy = require('hbsfy');
 var browserify = require('browserify');
 var app = require('./server');
 var urlSrc = require('./url-src');
+var path = require('path');
+var merge = require('merge-stream');
 
 function sassTask(dev) {
-  return gulp.src('www/static/css/*.scss')
+  return gulp.src('www/static/sass/*.scss')
     .pipe(sass({
       sourcemap: dev,
       style: 'compressed'
@@ -27,39 +29,53 @@ gulp.task('sass-build', function() {
   return sassTask(false);
 });
 
-function jsTask(bundler, dev) {
+function jsTask(bundler, out, dev) {
   var stream = bundler.bundle({
     debug: dev
-  }).pipe(source('all.js'));
+  }).pipe(
+    source(path.basename(out))
+  );
 
   if (!dev) {
     stream = stream.pipe(buffer()).pipe(uglify());
   }
 
-  return stream.pipe(gulp.dest('www/static/js/'));
+  return stream.pipe(
+    gulp.dest(path.dirname(out))
+  );
 }
 
-function makeBundler(func) {
-  return func('./www/static/js/index.js').transform(hbsfy);
+function makeBundler(inSrc, func) {
+  return func(inSrc).transform(hbsfy);
 }
+
+var browserifyJsMap = {
+  "./www/static/js-unmin/index.js": "www/static/js/page.js",
+  "./www/static/js-unmin/sw/index.js": "www/static/js/sw.js"
+};
 
 gulp.task('js-build', function() {
-  return jsTask(makeBundler(browserify), false);
+  var streams = Object.keys(browserifyJsMap).map(function(inSrc) {
+    var bundler = makeBundler(inSrc, browserify);
+    return jsTask(bundler, browserifyJsMap[inSrc], false);
+  });
+
+  return merge(streams);
 });
 
 gulp.task('watch', ['sass'], function() {
   // sass
-  gulp.watch('www/static/css/**/*.scss', ['sass']);
+  gulp.watch('www/static/sass/**/*.scss', ['sass']);
 
   // js
-  var bundler = makeBundler(watchify);
-  bundler.on('update', rebundle);
-
-  function rebundle() {
-    return jsTask(bundler, true);
-  }
-
-  return rebundle();
+  Object.keys(browserifyJsMap).forEach(function(inSrc) {
+    var bundler = makeBundler(inSrc, watchify);
+    bundler.on('update', rebundle);
+    function rebundle() {
+      return jsTask(bundler, browserifyJsMap[inSrc], true);
+    }
+    rebundle();
+  });
 });
 
 gulp.task('server', function() {
@@ -80,11 +96,7 @@ gulp.task('build', ['clean', 'sass-build'], function() {
   return urlSrc('http://localhost:3000/trained-to-thrill/', [
     '',
     'static/css/all.css',
-    "static/js/es6-promise.js",
-    "static/js/utils.js",
-    "static/js/flickr.js",
-    "static/js/photos-template.js",
-    "static/js/app.js",
+    "static/js/page.js",
     "static/js/sw.js",
     "static/imgs/logo.svg",
     "static/imgs/icon.png"

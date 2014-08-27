@@ -1,1 +1,0 @@
-window.photosTemplate = require('./views/photos.hbs');

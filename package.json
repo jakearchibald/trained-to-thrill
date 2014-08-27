@@ -23,6 +23,7 @@
     "handlebars": "~1.3.0",
     "hbsfy": "~1.3.2",
     "gulp-clean": "~0.2.4",
-    "es6-promise": "~1.0.0"
+    "es6-promise": "~1.0.0",
+    "merge-stream": "~0.1.5"
   }
 }
