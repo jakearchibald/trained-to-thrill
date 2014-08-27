@@ -1,3 +1,9 @@
+// overall structure
+  body {
+    @include display-flex;
+    @include flex-flow(column);
+  }
+
 // site header
   @include keyframes (spin) {
     from {
@@ -9,12 +15,12 @@
   }
 
   .site-header {
-    position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     background: #DA50A8;
     overflow: hidden;
+    position: relative;
     z-index: 10;
     
     & .logo {
@@ -83,9 +89,10 @@
 
 // photo
   .photos {
-    overflow: hidden;
-    margin: 37px 0 0;
+    overflow-y: scroll;
+    margin: 0;
     padding: 0 1rem;
+    @include flex(1);
   }
   .photo {
     border-radius: 5px;

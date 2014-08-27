@@ -26,3 +26,58 @@
     max-width: #{$prefix}max-content;
   }
 }
+
+/**
+ * Flexbox
+ */
+ 
+ @mixin display-flex {
+   @each $prefix in -webkit-, '' {
+     display: #{$prefix}flex;
+   }
+ }
+ @mixin flex-direction($spec...) {
+   @each $prefix in -webkit-, '' {
+     #{$prefix}flex-direction: $spec;
+   }
+ }
+ @mixin justify-content($spec...) {
+   @each $prefix in -webkit-, '' {
+     #{$prefix}justify-content: $spec;
+   }
+ }
+ @mixin flex($spec...) {
+   @each $prefix in -webkit-, '' {
+     #{$prefix}flex: $spec;
+   }
+ }
+ @mixin flex-flow($spec...) {
+   @each $prefix in -webkit-, '' {
+     #{$prefix}flex-flow: $spec;
+   }
+ }
+ @mixin align-items($spec...) {
+   @each $prefix in -webkit-, '' {
+     #{$prefix}align-items: $spec;
+   }
+ }
+ @mixin max-height-max-content {
+   @each $prefix in -webkit-, -moz-, '' {
+     max-height: #{$prefix}max-content;
+   }
+ }
+ @mixin max-height-min-content {
+   @each $prefix in -webkit-, -moz-, '' {
+     max-height: #{$prefix}max-content;
+   }
+ }
+ @mixin min-height-min-content {
+   @each $prefix in -webkit-, -moz-, '' {
+     min-height: #{$prefix}min-content;
+   }
+ }
+ @mixin min-width-min-content {
+   @each $prefix in -webkit-, -moz-, '' {
+     min-width: #{$prefix}min-content;
+   }
+ }
