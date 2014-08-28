@@ -2,6 +2,8 @@ var Promise = require('es6-promise').Promise;
 var flickr = require('./flickr');
 var photosTemplate = require('./views/photos.hbs');
 
+require('./libs/cachedb');
+
 // force https
 if ((!location.port || location.port == "80") && location.protocol != 'https:') {
   location.protocol = 'https:';
