@@ -13,7 +13,7 @@ var errorEl = document.querySelector('.error-container');
 
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/trained-to-thrill/static/js/sw.js', {
-    scope: '/trained-to-thrill/*'
+    scope: '/trained-to-thrill/'
   });
 }
 
