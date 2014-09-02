@@ -14,6 +14,10 @@ var errorEl = document.querySelector('.error-container');
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/trained-to-thrill/static/js/sw.js', {
     scope: '/trained-to-thrill/'
+  }).then(function(reg) {
+    console.log('◕‿◕', reg);
+  }, function(err) {
+    console.log('ಠ_ಠ', err);
   });
 }
 
@@ -30,14 +34,14 @@ function updatePage(data) {
 }
 
 function getTrainPhotoData() {
-  return flickr.search('rail', {
+  return flickr.search('train station', {
     headers: {}
   });
 }
 
 function getCachedTrainPhotoData() {
   if ('serviceWorker' in navigator && navigator.serviceWorker.current) {
-    return flickr.search('rail', {
+    return flickr.search('train station', {
       headers: {'x-use-cache': 'true'}
     });
   }
