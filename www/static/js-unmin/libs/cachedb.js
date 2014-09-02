@@ -61,29 +61,10 @@ function CacheDB() {
 var CacheDBProto = CacheDB.prototype;
 
 CacheDBProto._eachCacheName = function(tx, callback) {
-  return new Promise(function(resolve, reject) {
-    var cursorRequest = tx.objectStore('cacheNames').openCursor();
-    cursorRequest.onsuccess = function() {
-      var cursor = cursorRequest.result;
-
-      if (!cursor) {
-        resolve();
-        return;
-      }
-
-      if (callback(cursor)) {
-        cursor.continue();
-      }
-      else {
-        resolve();
-        return;
-      }
-    };
-
-    cursorRequest.onerror = function() {
-      reject(cursorRequest.error);
-    };
-  });
+  return IDBHelper.iterate(
+    tx.objectStore('cacheNames').openCursor(),
+    callback
+  );
 };
 
 CacheDBProto._eachMatch = function(tx, cacheName, request, callback, params) {
@@ -101,59 +82,39 @@ CacheDBProto._eachMatch = function(tx, cacheName, request, callback, params) {
     return Promise.resolve();
   }
 
-  return new Promise(function(resolve, reject) {
-    var cacheEntries = tx.objectStore('cacheEntries');
-    var range;
-    var index;
-    var indexName = 'cacheName-url';
-    var urlToMatch = new URL(request.url);
-    var cursorRequest;
+  var cacheEntries = tx.objectStore('cacheEntries');
+  var range;
+  var index;
+  var indexName = 'cacheName-url';
+  var urlToMatch = new URL(request.url);
 
-    urlToMatch.hash = '';
+  urlToMatch.hash = '';
 
-    if (ignoreSearch) {
-      urlToMatch.search = '';
-      indexName += 'NoSearch';
-    }
+  if (ignoreSearch) {
+    urlToMatch.search = '';
+    indexName += 'NoSearch';
+  }
 
-    index = cacheEntries.index(indexName);
+  index = cacheEntries.index(indexName);
 
-    if (prefixMatch) {
-      range = IDBKeyRange.bound([cacheName, urlToMatch], [cacheName, urlToMatch + String.fromCharCode(65535)]);
+  if (prefixMatch) {
+    range = IDBKeyRange.bound([cacheName, urlToMatch], [cacheName, urlToMatch + String.fromCharCode(65535)]);
+  }
+  else {
+    range = IDBKeyRange.only([cacheName, urlToMatch]);
+  }
+
+  cursorRequest = index.openCursor(range);
+
+  return IDBHelper.iterate(index.openCursor(range), function(cursor) {
+    var value = cursor.value;
+    
+    if (ignoreVary || matchesVary(request, cursor.value)) {
+      callback(cursor);
     }
     else {
-      range = IDBKeyRange.only([cacheName, urlToMatch]);
+      cursor.continue();
     }
-
-    cursorRequest = index.openCursor(range);
-
-    cursorRequest.onsuccess = function() {
-      var cursor = cursorRequest.result;
-
-      if (!cursor) {
-        resolve();
-        return;
-      }
-
-      var value = cursor.value;
-
-      if (ignoreVary || matchesVary(request, cursor.value)) {
-        if (callback(cursor)) {
-          cursor.continue();
-        }
-        else {
-          resolve();
-          return;
-        }
-      }
-      else {
-        cursor.continue();
-      }
-    };
-
-    cursorRequest.onerror = function() {
-      reject(cursorRequest.error);
-    };
   });
 };
 
@@ -162,7 +123,7 @@ CacheDBProto.matchAll = function(cacheName, request, params) {
   return this.db.transaction('cacheEntries', function(tx) {
     this._eachMatch(tx, cacheName, request, function(cursor) {
       matches.push(cursor.value);
-      return true;
+      cursor.continue();
     }, params);
   }.bind(this)).then(function() {
     return matches.map(entryToResponse);
@@ -174,7 +135,6 @@ CacheDBProto.match = function(cacheName, request, params) {
   return this.db.transaction('cacheEntries', function(tx) {
     this._eachMatch(tx, cacheName, request, function(cursor) {
       match = cursor.value;
-      return false;
     }, params);
   }.bind(this)).then(function() {
     return entryToResponse(match);
@@ -189,11 +149,11 @@ CacheDBProto.matchAcrossCaches = function(request, params) {
       var cacheName = cursor.value;
       this._eachMatch(tx, cacheName, request, function(cursor) {
         match = cursor.value;
-        return false; // we're done
+        // we're done
       }, params);
 
       if (!match) { // continue if no match
-        return true;
+        cursor.continue();
       }
     }.bind(this));
   }.bind(this)).then(function() {
@@ -222,11 +182,14 @@ CacheDBProto.createCache = function(cacheName) {
 };
 
 CacheDBProto.hasCache = function(cacheName) {
+  var returnVal;
   return this.db.transaction('cacheNames', function(tx) {
     var index = tx.objectStore.cacheNames.index('cacheName');
-    return index.get(cacheName);
+    returnVal = IDBHelper.promisify(index.get(cacheName)).then(function(val) {
+      return !!val;
+    });
   }.bind(this)).then(function(val) {
-    return !!val;
+    return returnVal;
   });
 };
 
@@ -234,20 +197,22 @@ CacheDBProto.deleteCache = function(cacheName) {
   var returnVal = false;
 
   return this.db.transaction(['cacheEntries', 'cacheNames'], function(tx) {
-    tx.objectStore.cacheNames.index('cacheName')
-      .get(cacheName).openCursor().onsuccess = del;
+    IDBHelper.iterate(
+      tx.objectStore.cacheNames.index('cacheName')
+      .get(cacheName).openCursor(),
+      del
+    );
 
-    tx.objectStore.cacheEntries.index('cacheName')
-      .get(cacheName).openCursor().onsuccess = del;
+    IDBHelper.iterate(
+      tx.objectStore.cacheEntries.index('cacheName')
+      .get(cacheName).openCursor(),
+      del
+    );
 
-    function del() {
+    function del(cursor) {
       returnVal = true;
-      var cursor = this.result;
-
-      if (cursor) {
-        cursor.delete();
-        cursor.continue();
-      }
+      cursor.delete();
+      cursor.continue();
     }
   }.bind(this), {mode: 'readWrite'}).then(function() {
     return returnVal;

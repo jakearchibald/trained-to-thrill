@@ -31,8 +31,42 @@ IDBHelper.promisify = function(obj) {
   });
 };
 
-var IDBHelperProto = IDBHelper.prototype;
+IDBHelper.iterate = function(cursorRequest, callback) {
+  var oldCursorContinue;
 
+  function cursorContinue() {
+    this._continuing = true;
+    return this.oldCursorContinue.call(this);
+  }
+
+  return new Promise(function(resolve, reject) {
+    cursorRequest.onsuccess = function() {
+      var cursor = cursorRequest.result;
+
+      if (!cursor) {
+        resolve();
+        return;
+      }
+
+      if (cursor.continue != cursorContinue) {
+        oldCursorContinue = cursor.continue;
+        cursor.continue = cursorContinue;
+      }
+
+      callback(cursor);
+
+      if (!cursor._continuing) {
+        resolve();
+      }
+    };
+
+    cursorRequest.onerror = function() {
+      reject(cursorRequest.error);
+    };
+  }.bind(this));
+};
+
+var IDBHelperProto = IDBHelper.prototype;
 
 IDBHelperProto.transaction = function(stores, callback, opts) {
   opts = opts || {};
@@ -41,78 +75,8 @@ IDBHelperProto.transaction = function(stores, callback, opts) {
     var mode = opts.mode || 'readonly';
 
     var tx = db.transaction(stores, mode);
-    var val = callback(tx, db);
-    var promise = IDBHelper.promisify(tx);
-    var readPromise;
-
-    if (!val) {
-      return promise;
-    }
-
-    if (val[0] && 'result' in val[0]) {
-      readPromise = Promise.all(val.map(IDBHelper.promisify));
-    }
-    else {
-      readPromise = IDBHelper.promisify(val);
-    }
-
-    return promise.then(function() {
-      return readPromise;
-    });
-  });
-};
-
-IDBHelperProto.get = function(store, key) {
-  return this.transaction(store, function(tx) {
-    return tx.objectStore(store).get(key);
-  });
-};
-
-IDBHelperProto.put = function(store, key, value) {
-  return this.transaction(store, function(tx) {
-    tx.objectStore(store).put(value, key);
-  }, {
-    mode: 'readwrite'
-  });
-};
-
-IDBHelperProto.each = function(storeName, callback, opts) {
-  opts = opts || {};
-
-  return new Promise(function(resolve, reject) {
-    this.transaction(storeName, function(tx) {
-      var store = tx.objectStore(storeName);
-      var cursorRequest;
-
-      if (opts.indexName) {
-        cursorRequest = store.index(opts.indexName).openCursor();
-      }
-      else {
-        cursorRequest = store.openCursor();
-      }
-
-      cursorRequest.onsuccess = function() {
-        var cursor = cursorRequest.result;
-
-        if (!cursor) {
-          resolve();
-          return;
-        }
-
-        callback(cursor.value, cursor.key, cursor);
-        cursor.continue();
-      };
-
-      cursorRequest.onerror = function() {
-        reject(cursorRequest.error);
-      };
-    });
-  }.bind(this));
-};
-
-IDBHelperProto.delete = function(store, key) {
-  return this.transaction(store, 'readwrite', function(tx) {
-    tx.objectStore(store).delete(key);
+    callback(tx, db);
+    return IDBHelper.promisify(tx);
   });
 };
 
