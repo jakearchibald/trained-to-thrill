@@ -201,4 +201,65 @@ CacheDBProto.matchAcrossCaches = function(request, params) {
   });
 };
 
+CacheDBProto.delete = function(cacheName, request, params) {
+  var returnVal = false;
+
+  return this.db.transaction('cacheEntries', function(tx) {
+    this._eachMatch(tx, cacheName, request, function(cursor) {
+      returnVal = true;
+      cursor.delete();
+    }, params);
+  }.bind(this), {mode: 'readWrite'}).then(function() {
+    return returnVal;
+  });
+};
+
+CacheDBProto.createCache = function(cacheName) {
+  return this.db.transaction('cacheNames', function(tx) {
+    var store = tx.objectStore.cacheNames;
+    store.add(cacheName);
+  }.bind(this), {mode: 'readWrite'});
+};
+
+CacheDBProto.hasCache = function(cacheName) {
+  return this.db.transaction('cacheNames', function(tx) {
+    var index = tx.objectStore.cacheNames.index('cacheName');
+    return index.get(cacheName);
+  }.bind(this)).then(function(val) {
+    return !!val;
+  });
+};
+
+CacheDBProto.deleteCache = function(cacheName) {
+  var returnVal = false;
+
+  return this.db.transaction(['cacheEntries', 'cacheNames'], function(tx) {
+    tx.objectStore.cacheNames.index('cacheName')
+      .get(cacheName).openCursor().onsuccess = del;
+
+    tx.objectStore.cacheEntries.index('cacheName')
+      .get(cacheName).openCursor().onsuccess = del;
+
+    function del() {
+      returnVal = true;
+      var cursor = this.result;
+
+      if (cursor) {
+        cursor.delete();
+        cursor.continue();
+      }
+    }
+  }.bind(this), {mode: 'readWrite'}).then(function() {
+    return returnVal;
+  });
+};
+
+CacheDBProto.put = function(cacheName, items) {
+  // items is [[request, response], [request, response], …]
+  return this.db.transaction(['cacheEntries', 'cacheNames'], function(tx) {
+    // TODO: you are here
+  }.bind(this), {mode: 'readWrite'});
+};
+
+
 module.exports = new CacheDB();

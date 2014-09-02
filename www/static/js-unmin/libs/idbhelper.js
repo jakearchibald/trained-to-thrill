@@ -1,4 +1,14 @@
-function promisifyRequest(obj) {
+function IDBHelper(name, version, upgradeCallback) {
+  var request = indexedDB.open(name, version);
+  this.ready = IDBHelper.promisify(request);
+  request.onupgradeneeded = function(event) {
+    upgradeCallback(request.result, event.oldVersion);
+  };
+}
+
+IDBHelper.supported = 'indexedDB' in self;
+
+IDBHelper.promisify = function(obj) {
   return new Promise(function(resolve, reject) {
     function onsuccess(event) {
       resolve(obj.result);
@@ -19,19 +29,10 @@ function promisifyRequest(obj) {
     obj.addEventListener('error', onerror);
     obj.addEventListener('abort', onerror);
   });
-}
-
-function IDBHelper(name, version, upgradeCallback) {
-  var request = indexedDB.open(name, version);
-  this.ready = promisifyRequest(request);
-  request.onupgradeneeded = function(event) {
-    upgradeCallback(request.result, event.oldVersion);
-  };
-}
-
-IDBHelper.supported = 'indexedDB' in self;
+};
 
 var IDBHelperProto = IDBHelper.prototype;
+
 
 IDBHelperProto.transaction = function(stores, callback, opts) {
   opts = opts || {};
@@ -41,7 +42,7 @@ IDBHelperProto.transaction = function(stores, callback, opts) {
 
     var tx = db.transaction(stores, mode);
     var val = callback(tx, db);
-    var promise = promisifyRequest(tx);
+    var promise = IDBHelper.promisify(tx);
     var readPromise;
 
     if (!val) {
@@ -49,10 +50,10 @@ IDBHelperProto.transaction = function(stores, callback, opts) {
     }
 
     if (val[0] && 'result' in val[0]) {
-      readPromise = Promise.all(val.map(promisifyRequest));
+      readPromise = Promise.all(val.map(IDBHelper.promisify));
     }
     else {
-      readPromise = promisifyRequest(val);
+      readPromise = IDBHelper.promisify(val);
     }
 
     return promise.then(function() {
