@@ -1,21 +1,30 @@
-this.oninstall = function(event) {
+var caches = require('../libs/caches');
+
+self.oninstall = function(event) {
   event.waitUntil(
-    caches.create('static-v1').then(function(cache) {
-      return cache.add(
+    caches.get('static-v1').then(function(cache) {
+      return cache || caches.create('static-v1');
+    }).then(function(cache) {
+      return cache.addAll([
         '/trained-to-thrill/',
         '/trained-to-thrill/static/css/all.css',
-        '/trained-to-thrill/static/js/es6-promise.js',
-        '/trained-to-thrill/static/js/utils.js',
-        '/trained-to-thrill/static/js/flickr.js',
-        '/trained-to-thrill/static/js/photos-template.js',
-        '/trained-to-thrill/static/js/app.js',
+        '/trained-to-thrill/static/js/page.js',
         '/trained-to-thrill/static/imgs/logo.svg',
         '/trained-to-thrill/static/imgs/icon.png'
-      );
+      ]);
     })
   );
 };
 
+self.addEventListener('fetch', function(event) {
+  event.respondWith(
+    caches.match(event.request).then(function(response) {
+      return response || fetch(event.request);
+    })
+  );
+});
+
+/*
 this.onfetch = function(event) {
   var requestURL = new URL(event.request.url);
 
@@ -56,3 +65,4 @@ function flickrImageResponse(request) {
     });
   });
 }
+*/

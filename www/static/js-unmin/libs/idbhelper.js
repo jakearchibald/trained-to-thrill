@@ -10,60 +10,72 @@ IDBHelper.supported = 'indexedDB' in self;
 
 IDBHelper.promisify = function(obj) {
   return new Promise(function(resolve, reject) {
-    function onsuccess(event) {
-      resolve(obj.result);
-      unlisten();
-    }
-    function onerror(event) {
-      reject(obj.error);
-      unlisten();
-    }
-    function unlisten() {
-      obj.removeEventListener('complete', onsuccess);
-      obj.removeEventListener('success', onsuccess);
-      obj.removeEventListener('error', onerror);
-      obj.removeEventListener('abort', onerror);
-    }
-    obj.addEventListener('complete', onsuccess);
-    obj.addEventListener('success', onsuccess);
-    obj.addEventListener('error', onerror);
-    obj.addEventListener('abort', onerror);
+    IDBHelper.callbackify(obj, resolve, reject);
   });
 };
 
-IDBHelper.iterate = function(cursorRequest, callback) {
+IDBHelper.callbackify = function(obj, doneCallback, errCallback) {
+  function onsuccess(event) {
+    if (doneCallback) {
+      doneCallback(obj.result);
+    }
+    unlisten();
+  }
+  function onerror(event) {
+    if (errCallback) {
+      errCallback(obj.error);
+    }
+    unlisten();
+  }
+  function unlisten() {
+    obj.removeEventListener('complete', onsuccess);
+    obj.removeEventListener('success', onsuccess);
+    obj.removeEventListener('error', onerror);
+    obj.removeEventListener('abort', onerror);
+  }
+  obj.addEventListener('complete', onsuccess);
+  obj.addEventListener('success', onsuccess);
+  obj.addEventListener('error', onerror);
+  obj.addEventListener('abort', onerror);
+};
+
+IDBHelper.iterate = function(cursorRequest, eachCallback, doneCallback, errorCallback) {
   var oldCursorContinue;
 
   function cursorContinue() {
     this._continuing = true;
-    return this.oldCursorContinue.call(this);
+    return oldCursorContinue.call(this);
   }
 
-  return new Promise(function(resolve, reject) {
-    cursorRequest.onsuccess = function() {
-      var cursor = cursorRequest.result;
+  cursorRequest.onsuccess = function() {
+    var cursor = cursorRequest.result;
 
-      if (!cursor) {
-        resolve();
-        return;
+    if (!cursor) {
+      if (doneCallback) {
+        doneCallback();
       }
+      return;
+    }
 
-      if (cursor.continue != cursorContinue) {
-        oldCursorContinue = cursor.continue;
-        cursor.continue = cursorContinue;
+    if (cursor.continue != cursorContinue) {
+      oldCursorContinue = cursor.continue;
+      cursor.continue = cursorContinue;
+    }
+
+    eachCallback(cursor);
+
+    if (!cursor._continuing) {
+      if (doneCallback) {
+        doneCallback();
       }
+    }
+  };
 
-      callback(cursor);
-
-      if (!cursor._continuing) {
-        resolve();
-      }
-    };
-
-    cursorRequest.onerror = function() {
-      reject(cursorRequest.error);
-    };
-  }.bind(this));
+  cursorRequest.onerror = function() {
+    if (errorCallback) {
+      errorCallback(cursorRequest.error);
+    }
+  };
 };
 
 var IDBHelperProto = IDBHelper.prototype;
