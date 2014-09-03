@@ -118,6 +118,13 @@ CacheDBProto._eachMatch = function(tx, cacheName, request, callback, params) {
   });
 };
 
+CacheDBProto._hasCache = function(tx, cacheName) {
+  var index = tx.objectStore.cacheNames.index('cacheName');
+  return IDBHelper.promisify(index.get(cacheName)).then(function(val) {
+    return !!val;
+  });
+};
+
 CacheDBProto.matchAll = function(cacheName, request, params) {
   var matches = [];
   return this.db.transaction('cacheEntries', function(tx) {
@@ -184,10 +191,7 @@ CacheDBProto.createCache = function(cacheName) {
 CacheDBProto.hasCache = function(cacheName) {
   var returnVal;
   return this.db.transaction('cacheNames', function(tx) {
-    var index = tx.objectStore.cacheNames.index('cacheName');
-    returnVal = IDBHelper.promisify(index.get(cacheName)).then(function(val) {
-      return !!val;
-    });
+    returnVal = this._hasCache(tx, cacheName);
   }.bind(this)).then(function(val) {
     return returnVal;
   });
@@ -198,14 +202,12 @@ CacheDBProto.deleteCache = function(cacheName) {
 
   return this.db.transaction(['cacheEntries', 'cacheNames'], function(tx) {
     IDBHelper.iterate(
-      tx.objectStore.cacheNames.index('cacheName')
-      .get(cacheName).openCursor(),
+      tx.objectStore.cacheNames.index('cacheName').get(cacheName).openCursor(),
       del
     );
 
     IDBHelper.iterate(
-      tx.objectStore.cacheEntries.index('cacheName')
-      .get(cacheName).openCursor(),
+      tx.objectStore.cacheEntries.index('cacheName').get(cacheName).openCursor(),
       del
     );
 
@@ -220,10 +222,19 @@ CacheDBProto.deleteCache = function(cacheName) {
 };
 
 CacheDBProto.put = function(cacheName, items) {
+  var returnVal;
   // items is [[request, response], [request, response], …]
   return this.db.transaction(['cacheEntries', 'cacheNames'], function(tx) {
-    // TODO: you are here
-  }.bind(this), {mode: 'readWrite'});
+    returnVal = this._hasCache(tx, cacheName).then(function(hasCache) {
+      if (!hasCache) {
+        throw Error("Cache of that name does not exist");
+      }
+    }).then(function() {
+      
+    });
+  }.bind(this), {mode: 'readWrite'}).then(function() {
+    return returnVal;
+  });
 };
 
 
