@@ -306,12 +306,12 @@ CacheDBProto.deleteCache = function(cacheName) {
 
   return this.db.transaction(['cacheEntries', 'cacheNames'], function(tx) {
     IDBHelper.iterate(
-      tx.objectStore('cacheNames').index('cacheName').get(cacheName).openCursor(),
+      tx.objectStore('cacheNames').index('cacheName').openCursor(IDBKeyRange.only(cacheName)),
       del
     );
 
     IDBHelper.iterate(
-      tx.objectStore('cacheEntries').index('cacheName').get(cacheName).openCursor(),
+      tx.objectStore('cacheEntries').index('cacheName').openCursor(IDBKeyRange.only(cacheName)),
       del
     );
 
