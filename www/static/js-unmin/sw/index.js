@@ -17,7 +17,7 @@ self.oninstall = function(event) {
       return cache || caches.create('trains-imgs');
     }),
     caches.get('trains-data').then(function(cache) {
-      return cache || caches.create('trains-imgs');
+      return cache || caches.create('trains-data');
     })
   ]));
 };
