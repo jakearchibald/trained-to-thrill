@@ -2,8 +2,6 @@ var Promise = require('es6-promise').Promise;
 var flickr = require('./flickr');
 var photosTemplate = require('./views/photos.hbs');
 
-require('./libs/cachedb');
-
 // force https
 if ((!location.port || location.port == "80") && location.protocol != 'https:') {
   location.protocol = 'https:';
@@ -44,7 +42,7 @@ function getTrainPhotoData() {
 function getCachedTrainPhotoData() {
   if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
     return flickr.search('train station', {
-      headers: {'x-use-cache': 'true'}
+      headers: {'Accept': 'x-cache/only'}
     });
   }
   else {
