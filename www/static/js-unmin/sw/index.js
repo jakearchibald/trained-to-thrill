@@ -1,7 +1,7 @@
 var caches = require('../libs/caches');
 
 self.oninstall = function(event) {
-  event.waitUntil(
+  event.waitUntil(Promise.all([
     caches.get('static-v1').then(function(cache) {
       return cache || caches.create('static-v1');
     }).then(function(cache) {
@@ -12,20 +12,17 @@ self.oninstall = function(event) {
         '/trained-to-thrill/static/imgs/logo.svg',
         '/trained-to-thrill/static/imgs/icon.png'
       ]);
+    }),
+    caches.get('trains-imgs').then(function(cache) {
+      return cache || caches.create('trains-imgs');
+    }),
+    caches.get('trains-data').then(function(cache) {
+      return cache || caches.create('trains-imgs');
     })
-  );
+  ]));
 };
 
-self.addEventListener('fetch', function(event) {
-  event.respondWith(
-    caches.match(event.request).then(function(response) {
-      return response || fetch(event.request);
-    })
-  );
-});
-
-/*
-this.onfetch = function(event) {
+self.onfetch = function(event) {
   var requestURL = new URL(event.request.url);
 
   if (requestURL.hostname == 'api.flickr.com') {
@@ -36,33 +33,49 @@ this.onfetch = function(event) {
   }
   else {
     event.respondWith(
-      caches.match(event.request).catch(function() {
-        return event.default();
+      caches.match(event.request).then(function(response) {
+        if (response) {
+          return response;
+        }
+        throw Error("No response");
       })
     );
   }
 };
 
 function flickrAPIResponse(request) {
-  if (request.headers.has('x-use-cache')) {
-    return caches.match(request);
+  if (request.headers.get('Accept') == 'x-cache/only') {
+    return caches.match(request).then(function(response) {
+      if (response) {
+        return response;
+      }
+      throw Error("No response");
+    });
   }
   else {
-    return caches.delete('content').then(function() {
-      return caches.create('content');
-    }).then(function(cache) {
-      cache.add(request);
-      return fetch(request);
+    return fetch(request.url).then(function(response) {
+      return caches.delete('content').then(function() {
+        return caches.create('content');
+      }).then(function(cache) {
+        cache.put(request, response);
+        return response;
+      });
     });
   }
 }
 
 function flickrImageResponse(request) {
-  return caches.match(request).catch(function() {
-    return caches.get('content').then(function(cache) {
-      cache.add(request);
-      return fetch(request);
+  return caches.match(request).then(function(response) {
+    if (response) {
+      return response;
+    }
+
+    return fetch(request.url).then(function(response) {
+      caches.get('trains-imgs').then(function(cache) {
+        cache.put(request, response);
+      });
+
+      return response;
     });
   });
 }
-*/
