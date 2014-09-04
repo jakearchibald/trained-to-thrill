@@ -42,7 +42,7 @@ function getTrainPhotoData() {
 }
 
 function getCachedTrainPhotoData() {
-  if ('serviceWorker' in navigator && navigator.serviceWorker.current) {
+  if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
     return flickr.search('train station', {
       headers: {'x-use-cache': 'true'}
     });
