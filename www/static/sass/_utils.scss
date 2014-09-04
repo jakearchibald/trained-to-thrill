@@ -17,8 +17,8 @@
 }
 
 @mixin keyframes($name) {
-  @-webkit-keyframes $name { @content; }
-  @keyframes         $name { @content; }
+  @-webkit-keyframes #{$name} { @content; }
+  @keyframes         #{$name} { @content; }
 }
 
 @mixin max-width-max-content {
