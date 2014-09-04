@@ -50,6 +50,9 @@ function flattenHeaders(headers) {
   headers.forEach(function(val, key) {
     returnVal[key] = val;
   });
+
+  // so XHR can read the result (we don't have access to this header)
+  returnVal['Access-Control-Allow-Origin'] = location.origin;
   return returnVal;
 }
 
