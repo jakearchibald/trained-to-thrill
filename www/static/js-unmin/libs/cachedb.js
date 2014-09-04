@@ -96,29 +96,31 @@ function CacheDB() {
   this.db = new IDBHelper('cache-polyfill', 1, function(db, oldVersion) {
     switch (oldVersion) {
       case 0:
-        var namesStore = db.createObjectStore('cacheNames', {autoIncrement: true});
-        namesStore.createIndex('cacheName', '', {unique: true});
+        var namesStore = db.createObjectStore('cacheNames', {
+          keyPath: ['origin', 'name']
+        });
+        namesStore.createIndex('origin', ['origin', 'added']);
 
         var entryStore = db.createObjectStore('cacheEntries', {
-          keyPath: ['cacheName', 'request.url', 'varyID']
+          keyPath: ['origin', 'cacheName', 'request.url', 'varyID']
         });
-        entryStore.createIndex('cacheName', 'cacheName');
-        entryStore.createIndex('cacheName-urlNoSearch', ['cacheName', 'requestUrlNoSearch']);
-        entryStore.createIndex('cacheName-url', ['cacheName', 'request.url']);
+        entryStore.createIndex('origin-cacheName', ['origin', 'cacheName', 'added']);
+        entryStore.createIndex('origin-cacheName-urlNoSearch', ['origin', 'cacheName', 'requestUrlNoSearch', 'added']);
+        entryStore.createIndex('origin-cacheName-url', ['origin', 'cacheName', 'request.url', 'added']);
     }
   });
 }
 
 var CacheDBProto = CacheDB.prototype;
 
-CacheDBProto._eachCacheName = function(tx, eachCallback, doneCallback, errorCallback) {
+CacheDBProto._eachCache = function(tx, origin, eachCallback, doneCallback, errorCallback) {
   IDBHelper.iterate(
-    tx.objectStore('cacheNames').openCursor(),
+    tx.objectStore('cacheNames').index('origin').openCursor(IDBKeyRange.bound([origin, 0], [origin, Infinity])),
     eachCallback, doneCallback, errorCallback
   );
 };
 
-CacheDBProto._eachMatch = function(tx, cacheName, request, eachCallback, doneCallback, errorCallback, params) {
+CacheDBProto._eachMatch = function(tx, origin, cacheName, request, eachCallback, doneCallback, errorCallback, params) {
   params = params || {};
 
   var ignoreSearch = Boolean(params.ignoreSearch);
@@ -136,7 +138,7 @@ CacheDBProto._eachMatch = function(tx, cacheName, request, eachCallback, doneCal
   var cacheEntries = tx.objectStore('cacheEntries');
   var range;
   var index;
-  var indexName = 'cacheName-url';
+  var indexName = 'origin-cacheName-url';
   var urlToMatch = new URL(request.url);
 
   urlToMatch.hash = '';
@@ -152,10 +154,10 @@ CacheDBProto._eachMatch = function(tx, cacheName, request, eachCallback, doneCal
   index = cacheEntries.index(indexName);
 
   if (prefixMatch) {
-    range = IDBKeyRange.bound([cacheName, urlToMatch], [cacheName, urlToMatch + String.fromCharCode(65535)]);
+    range = IDBKeyRange.bound([origin, cacheName, urlToMatch, 0], [origin, cacheName, urlToMatch + String.fromCharCode(65535), Infinity]);
   }
   else {
-    range = IDBKeyRange.only([cacheName, urlToMatch]);
+    range = IDBKeyRange.bound([origin, cacheName, urlToMatch, 0], [origin, cacheName, urlToMatch, Infinity]);
   }
 
   IDBHelper.iterate(index.openCursor(range), function(cursor) {
@@ -170,17 +172,17 @@ CacheDBProto._eachMatch = function(tx, cacheName, request, eachCallback, doneCal
   }, doneCallback, errorCallback);
 };
 
-CacheDBProto._hasCache = function(tx, cacheName, doneCallback, errCallback) {
-  var index = tx.objectStore('cacheNames').index('cacheName');
-  return IDBHelper.callbackify(index.get(cacheName), function(val) {
+CacheDBProto._hasCache = function(tx, origin, cacheName, doneCallback, errCallback) {
+  var store = tx.objectStore('cacheNames');
+  return IDBHelper.callbackify(store.get([origin, cacheName]), function(val) {
     doneCallback(!!val);
   }, errCallback);
 };
 
-CacheDBProto._delete = function(tx, cacheName, request, doneCallback, errCallback, params) {
+CacheDBProto._delete = function(tx, origin, cacheName, request, doneCallback, errCallback, params) {
   var returnVal = false;
 
-  this._eachMatch(tx, cacheName, request, function(cursor) {
+  this._eachMatch(tx, origin, cacheName, request, function(cursor) {
     returnVal = true;
     cursor.delete();
   }, function() {
@@ -190,10 +192,10 @@ CacheDBProto._delete = function(tx, cacheName, request, doneCallback, errCallbac
   }, errCallback, params);
 };
 
-CacheDBProto.matchAllRequests = function(cacheName, request, params) {
+CacheDBProto.matchAllRequests = function(origin, cacheName, request, params) {
   var matches = [];
   return this.db.transaction('cacheEntries', function(tx) {
-    this._eachMatch(tx, cacheName, request, function(cursor) {
+    this._eachMatch(tx, origin, cacheName, request, function(cursor) {
       matches.push(cursor.key);
       cursor.continue();
     }, undefined, undefined, params);
@@ -202,14 +204,14 @@ CacheDBProto.matchAllRequests = function(cacheName, request, params) {
   });
 };
 
-CacheDBProto.allRequests = function(cacheName) {
+CacheDBProto.allRequests = function(origin, cacheName) {
   var matches = [];
 
   return this.db.transaction('cacheEntries', function(tx) {
     var cacheEntries = tx.objectStore('cacheEntries');
-    var index = cacheEntries.index('cacheName');
+    var index = cacheEntries.index('origin-cacheName');
 
-    IDBHelper.iterate(index.openCursor(IDBKeyRange.only(cacheName)), function(cursor) {
+    IDBHelper.iterate(index.openCursor(IDBKeyRange.bound([origin, cacheName, 0], [origin, cacheName, Infinity])), function(cursor) {
       matches.push(cursor.key);
       cursor.continue();
     });
@@ -218,10 +220,10 @@ CacheDBProto.allRequests = function(cacheName) {
   });
 };
 
-CacheDBProto.matchAll = function(cacheName, request, params) {
+CacheDBProto.matchAll = function(origin, cacheName, request, params) {
   var matches = [];
   return this.db.transaction('cacheEntries', function(tx) {
-    this._eachMatch(tx, cacheName, request, function(cursor) {
+    this._eachMatch(tx, origin, cacheName, request, function(cursor) {
       matches.push(cursor.value);
       cursor.continue();
     }, undefined, undefined, params);
@@ -230,10 +232,10 @@ CacheDBProto.matchAll = function(cacheName, request, params) {
   });
 };
 
-CacheDBProto.match = function(cacheName, request, params) {
+CacheDBProto.match = function(origin, cacheName, request, params) {
   var match;
   return this.db.transaction('cacheEntries', function(tx) {
-    this._eachMatch(tx, cacheName, request, function(cursor) {
+    this._eachMatch(tx, origin, cacheName, request, function(cursor) {
       match = cursor.value;
     }, undefined, undefined, params);
   }.bind(this)).then(function() {
@@ -241,13 +243,14 @@ CacheDBProto.match = function(cacheName, request, params) {
   });
 };
 
-CacheDBProto.matchAcrossCaches = function(request, params) {
+CacheDBProto.matchAcrossCaches = function(origin, request, params) {
   var match;
 
   return this.db.transaction(['cacheEntries', 'cacheNames'], function(tx) {
-    this._eachCacheName(tx, function(cursor) {
-      var cacheName = cursor.value;
-      this._eachMatch(tx, cacheName, request, function(cursor) {
+    this._eachCache(tx, origin, function(cursor) {
+      var cacheName = cursor.value.name;
+
+      this._eachMatch(tx, origin, cacheName, request, function(cursor) {
         match = cursor.value;
         // we're done
       }, undefined, undefined, params);
@@ -261,12 +264,12 @@ CacheDBProto.matchAcrossCaches = function(request, params) {
   });
 };
 
-CacheDBProto.cacheNames = function() {
+CacheDBProto.cacheNames = function(origin) {
   var names = [];
 
   return this.db.transaction('cacheNames', function(tx) {
-    this._eachCacheName(tx, function(cursor) {
-      names.push(cursor.value);
+    this._eachCache(tx, origin, function(cursor) {
+      names.push(cursor.value.name);
       cursor.continue();
     }.bind(this));
   }.bind(this)).then(function() {
@@ -274,11 +277,11 @@ CacheDBProto.cacheNames = function() {
   });
 };
 
-CacheDBProto.delete = function(cacheName, request, params) {
+CacheDBProto.delete = function(origin, cacheName, request, params) {
   var returnVal;
 
   return this.db.transaction('cacheEntries', function(tx) {
-    this._delete(tx, cacheName, request, params, function(v) {
+    this._delete(tx, origin, cacheName, request, params, function(v) {
       returnVal = v;
     });
   }.bind(this), {mode: 'readwrite'}).then(function() {
@@ -286,17 +289,21 @@ CacheDBProto.delete = function(cacheName, request, params) {
   });
 };
 
-CacheDBProto.createCache = function(cacheName) {
+CacheDBProto.createCache = function(origin, cacheName) {
   return this.db.transaction('cacheNames', function(tx) {
     var store = tx.objectStore('cacheNames');
-    store.add(cacheName);
+    store.add({
+      origin: origin,
+      name: cacheName,
+      added: Date.now()
+    });
   }.bind(this), {mode: 'readwrite'});
 };
 
-CacheDBProto.hasCache = function(cacheName) {
+CacheDBProto.hasCache = function(origin, cacheName) {
   var returnVal;
   return this.db.transaction('cacheNames', function(tx) {
-    this._hasCache(tx, cacheName, function(val) {
+    this._hasCache(tx, origin, cacheName, function(val) {
       returnVal = val;
     });
   }.bind(this)).then(function(val) {
@@ -304,17 +311,17 @@ CacheDBProto.hasCache = function(cacheName) {
   });
 };
 
-CacheDBProto.deleteCache = function(cacheName) {
+CacheDBProto.deleteCache = function(origin, cacheName) {
   var returnVal = false;
 
   return this.db.transaction(['cacheEntries', 'cacheNames'], function(tx) {
     IDBHelper.iterate(
-      tx.objectStore('cacheNames').index('cacheName').openCursor(IDBKeyRange.only(cacheName)),
+      tx.objectStore('cacheNames').openCursor(IDBKeyRange.only([origin, cacheName])),
       del
     );
 
     IDBHelper.iterate(
-      tx.objectStore('cacheEntries').index('cacheName').openCursor(IDBKeyRange.only(cacheName)),
+      tx.objectStore('cacheEntries').index('origin-cacheName').openCursor(IDBKeyRange.bound([origin, cacheName, 0], [origin, cacheName, Infinity])),
       del
     );
 
@@ -328,7 +335,7 @@ CacheDBProto.deleteCache = function(cacheName) {
   });
 };
 
-CacheDBProto.put = function(cacheName, items) {
+CacheDBProto.put = function(origin, cacheName, items) {
   // items is [[request, response], [request, response], …]
   var item;
 
@@ -352,7 +359,7 @@ CacheDBProto.put = function(cacheName, items) {
     })
   ).then(function(responseBodies) {
     return this.db.transaction(['cacheEntries', 'cacheNames'], function(tx) {
-      this._hasCache(tx, cacheName, function(hasCache) {
+      this._hasCache(tx, origin, cacheName, function(hasCache) {
         if (!hasCache) {
           throw Error("Cache of that name does not exist");
         }
@@ -368,13 +375,15 @@ CacheDBProto.put = function(cacheName, items) {
           // working around Chrome bug
           requestUrlNoSearch = requestUrlNoSearch.href.replace(/\?$/, '');
 
-          this._delete(tx, cacheName, request, function() {
+          this._delete(tx, origin, cacheName, request, function() {
             tx.objectStore('cacheEntries').add({
+              origin: origin,
               cacheName: cacheName,
               request: requestEntry,
               response: responseEntry,
               requestUrlNoSearch: requestUrlNoSearch,
-              varyID: createVaryID(requestEntry, responseEntry)
+              varyID: createVaryID(requestEntry, responseEntry),
+              added: Date.now()
             });
           });
 

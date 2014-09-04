@@ -15,9 +15,6 @@ self.oninstall = function(event) {
     }),
     caches.get('trains-imgs').then(function(cache) {
       return cache || caches.create('trains-imgs');
-    }),
-    caches.get('trains-data').then(function(cache) {
-      return cache || caches.create('trains-data');
     })
   ]));
 };
@@ -37,7 +34,7 @@ self.onfetch = function(event) {
         if (response) {
           return response;
         }
-        throw Error("No response");
+        return new Response("No response");
       })
     );
   }
@@ -49,13 +46,13 @@ function flickrAPIResponse(request) {
       if (response) {
         return response;
       }
-      throw Error("No response");
+      return new Response("No response");
     });
   }
   else {
     return fetch(request.url).then(function(response) {
-      return caches.delete('content').then(function() {
-        return caches.create('content');
+      return caches.delete('trains-imgs').then(function() {
+        return caches.create('trains-imgs');
       }).then(function(cache) {
         cache.put(request, response);
         return response;
