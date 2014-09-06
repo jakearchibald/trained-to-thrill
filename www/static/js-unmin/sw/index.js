@@ -1,10 +1,9 @@
-var version = 2;
 var caches = require('../libs/caches');
 
 self.oninstall = function(event) {
   event.waitUntil(Promise.all([
-    caches.get('trains-static-v2').then(function(cache) {
-      return cache || caches.create('trains-static-v2');
+    caches.get('trains-static-v5').then(function(cache) {
+      return cache || caches.create('trains-static-v5');
     }).then(function(cache) {
       return cache.addAll([
         '/trained-to-thrill/',
@@ -21,7 +20,7 @@ self.oninstall = function(event) {
 };
 
 var expectedCaches = [
-  'trains-static-v2',
+  'trains-static-v5',
   'trains-imgs'
 ];
 
@@ -74,8 +73,8 @@ function flickrAPIResponse(request) {
   }
   else {
     return fetch(request.url).then(function(response) {
-      return caches.delete('trains-imgs').then(function() {
-        return caches.create('trains-imgs');
+      return caches.get('trains-imgs').then(function(cache) {
+        return cache || caches.create('trains-imgs');
       }).then(function(cache) {
         cache.put(request, response);
         return response;

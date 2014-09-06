@@ -32,11 +32,13 @@ function hideSpinner(data) {
   refreshButton.classList.remove('loading');
 }
 
-function updatePage(data, adjustScroll) {
+function updatePage(data) {
   var scrollHeight;
   
-  if (photoIDsDisplayed && adjustScroll) {
+  
+  if (photoIDsDisplayed) {
     scrollHeight = photosEl.scrollHeight;
+
     data = data.filter(function(photo) {
       if (photoIDsDisplayed.indexOf(photo.id) == -1) {
         photoIDsDisplayed.push(photo.id);
@@ -90,15 +92,21 @@ refreshButton.addEventListener('click', function(event) {
   this.blur();
   event.preventDefault();
   showSpinner();
-  getTrainPhotoData().then(updatePage).catch(showConnectionError).then(hideSpinner);
+  getTrainPhotoData().then(function(data) {
+    var oldLen = photoIDsDisplayed && photoIDsDisplayed.length;
+    updatePage(data);
+    if (oldLen != photoIDsDisplayed.length) {
+      photosEl.scrollTop = 0;
+    }
+  }).catch(showConnectionError).then(hideSpinner);
 });
 
 // Initial load
 
 var liveDataPromise = getTrainPhotoData().then(function(data) {
   var alreadyRendered = !!photoIDsDisplayed;
-  var oldLen = alreadyRendered && photoIDsDisplayed.length;
-  updatePage(data, true);
+  var oldLen = photoIDsDisplayed && photoIDsDisplayed.length;
+  updatePage(data);
   if (alreadyRendered && oldLen != photoIDsDisplayed.length) {
     showMessage("▲ New trains ▲", 3000);
   }
