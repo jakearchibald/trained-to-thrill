@@ -97,8 +97,9 @@ refreshButton.addEventListener('click', function(event) {
 
 var liveDataPromise = getTrainPhotoData().then(function(data) {
   var alreadyRendered = !!photoIDsDisplayed;
+  var oldLen = alreadyRendered && photoIDsDisplayed.length;
   updatePage(data, true);
-  if (alreadyRendered) {
+  if (alreadyRendered && oldLen != photoIDsDisplayed.length) {
     showMessage("▲ New trains ▲", 3000);
   }
 });
