@@ -1,6 +1,7 @@
 var Promise = require('es6-promise').Promise;
 var flickr = require('./flickr');
 var photosTemplate = require('./views/photos.hbs');
+var utils = require('./utils');
 
 // force https
 if ((!location.port || location.port == "80") && location.protocol != 'https:') {
@@ -9,7 +10,9 @@ if ((!location.port || location.port == "80") && location.protocol != 'https:') 
 
 var photosEl = document.querySelector('.photos');
 var refreshButton = document.querySelector('button.refresh');
-var errorEl = document.querySelector('.error-container');
+var msgEl = document.querySelector('.msg-container');
+var msgContentEl = document.querySelector('.msg');
+var photoIDsDisplayed = null;
 
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/trained-to-thrill/static/js/sw.js', {
@@ -29,8 +32,26 @@ function hideSpinner(data) {
   refreshButton.classList.remove('loading');
 }
 
-function updatePage(data) {
-  photosEl.innerHTML = photosTemplate(data);
+function updatePage(data, adjustScroll) {
+  var scrollHeight;
+  
+  if (photoIDsDisplayed && adjustScroll) {
+    scrollHeight = photosEl.scrollHeight;
+    data = data.filter(function(photo) {
+      if (photoIDsDisplayed.indexOf(photo.id) == -1) {
+        photoIDsDisplayed.push(photo.id);
+        return true;
+      }
+      return false;
+    });
+
+    photosEl.insertBefore(utils.strToEls(photosTemplate(data)), photosEl.firstChild);
+    photosEl.scrollTop += photosEl.scrollHeight - scrollHeight;
+  }
+  else {
+    photoIDsDisplayed = data.map(function(p) { return p.id; });
+    photosEl.insertBefore(utils.strToEls(photosTemplate(data)), photosEl.firstChild);
+  }
 }
 
 function getTrainPhotoData() {
@@ -46,17 +67,22 @@ function getCachedTrainPhotoData() {
     });
   }
   else {
-    return Promise.reject(Error("No current serviceWorker"));
+    return Promise.reject(Error("No controller"));
   }
 }
 
-function showConnectionError() {
-  errorEl.style.display = 'block';
-  errorEl.offsetWidth;
-  errorEl.classList.add('show');
+function showMessage(msg, duration) {
+  msgContentEl.textContent = msg;
+  msgEl.style.display = 'block';
+  msgEl.offsetWidth;
+  msgEl.classList.add('show');
   setTimeout(function() {
-    errorEl.classList.remove('show');
-  }, 5000);
+    msgEl.classList.remove('show');
+  }, duration);
+}
+
+function showConnectionError() {
+  showMessage("Connectivity derailed!", 5000);
 }
 
 // Refresh button
@@ -68,14 +94,17 @@ refreshButton.addEventListener('click', function(event) {
 });
 
 // Initial load
-var showingLiveData = false;
 
-var liveDataPromise = getTrainPhotoData().then(updatePage).then(function() {
-  showingLiveData = true;
+var liveDataPromise = getTrainPhotoData().then(function(data) {
+  var alreadyRendered = !!photoIDsDisplayed;
+  updatePage(data, true);
+  if (alreadyRendered) {
+    showMessage("▲ New trains ▲", 3000);
+  }
 });
 
 var cachedDataPromise = getCachedTrainPhotoData().then(function(data) {
-  if (!showingLiveData) {
+  if (!photoIDsDisplayed) {
     updatePage(data);
   }
 });

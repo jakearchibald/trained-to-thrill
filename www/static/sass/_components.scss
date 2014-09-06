@@ -161,7 +161,7 @@
   }
 
 // error
-  .error-container {
+  .msg-container {
     position: fixed;
     top: 53px;
     left: 0;
@@ -178,7 +178,7 @@
       display: block;
     }
   }
-  .error {
+  .msg {
     margin: 0 auto;
     color: #FFF;
     background: rgba(0, 0, 0, 0.7);

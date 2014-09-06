@@ -48,11 +48,7 @@ CacheStorageProto.delete = function(name) {
 };
 
 CacheStorageProto.keys = function() {
-  return cacheDB.cacheNames(this._origin).then(function(names) {
-    return names.map(function(name) {
-      return this._vendCache(name);
-    }.bind(this));
-  }.bind(this));
+  return cacheDB.cacheNames(this._origin);
 };
 
 module.exports = new CacheStorage();

@@ -60,9 +60,22 @@ function toQuerystring(obj) {
   return str.join("&");
 }
 
+var strToEls = (function () {
+  var tmpEl = document.createElement('div');
+  return function (str) {
+    var r = document.createDocumentFragment();
+    tmpEl.innerHTML = str;
+    while (tmpEl.childNodes[0]) {
+      r.appendChild(tmpEl.childNodes[0]);
+    }
+    return r;
+  };
+}());
+
 
 module.exports = {
   request: request,
   defaults: defaults,
-  toQuerystring: toQuerystring
+  toQuerystring: toQuerystring,
+  strToEls: strToEls
 };

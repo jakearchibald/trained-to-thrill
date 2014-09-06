@@ -21,8 +21,11 @@ function search(text, opts) {
       throw Error(response.err.msg);
     }
 
-    return response.photos.photo.map(function(photo) {
+    return response.photos.photo.sort(function(a, b) {
+      return b.id - a.id;
+    }).map(function(photo) {
       return {
+        id: photo.id,
         title: photo.title,
         flickrUrl: 'https://www.flickr.com/photos/' + photo.owner + '/' + photo.id + '/',
         imgUrl: 'https://farm' + photo.farm + '.staticflickr.com/' + photo.server + '/' + photo.id + '_' + photo.secret + '_c.jpg',

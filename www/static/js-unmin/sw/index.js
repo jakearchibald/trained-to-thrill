@@ -1,9 +1,10 @@
+var version = 2;
 var caches = require('../libs/caches');
 
 self.oninstall = function(event) {
   event.waitUntil(Promise.all([
-    caches.get('static-v1').then(function(cache) {
-      return cache || caches.create('static-v1');
+    caches.get('trains-static-v2').then(function(cache) {
+      return cache || caches.create('trains-static-v2');
     }).then(function(cache) {
       return cache.addAll([
         '/trained-to-thrill/',
@@ -17,6 +18,28 @@ self.oninstall = function(event) {
       return cache || caches.create('trains-imgs');
     })
   ]));
+};
+
+var expectedCaches = [
+  'trains-static-v2',
+  'trains-imgs'
+];
+
+self.onactivate = function(event) {
+  event.waitUntil(
+    caches.keys().then(function(cacheNames) {
+      return Promise.all(
+        cacheNames.map(function(cacheName) {
+          if (!/^trains-/.test(cacheName)) {
+            return;
+          }
+          if (expectedCaches.indexOf(cacheName) == -1) {
+            return caches.delete(cacheName);
+          }
+        })
+      );
+    })
+  );
 };
 
 self.onfetch = function(event) {
