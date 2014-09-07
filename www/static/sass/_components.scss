@@ -122,6 +122,8 @@
       margin: 1rem 0 0;
       font-size: 1rem;
       max-width: 570px;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
     & .description {
       margin: 1rem 0 0;
