@@ -212,7 +212,7 @@ CacheDBProto.allRequests = function(origin, cacheName) {
     var index = cacheEntries.index('origin-cacheName');
 
     IDBHelper.iterate(index.openCursor(IDBKeyRange.bound([origin, cacheName, 0], [origin, cacheName, Infinity])), function(cursor) {
-      matches.push(cursor.key);
+      matches.push(cursor.value);
       cursor.continue();
     });
   }).then(function() {

@@ -76,7 +76,18 @@ function flickrAPIResponse(request) {
       return caches.get('trains-imgs').then(function(cache) {
         return cache || caches.create('trains-imgs');
       }).then(function(cache) {
-        cache.put(request, response);
+        cache.keys().then(function(requests) {
+          if (requests.length > 20) {
+            return Promise.all(
+              requests.slice(0, requests.length - 20).map(function(request) {
+                cache.delete(request);
+              })
+            );
+          }
+        }).then(function() {
+          cache.put(request, response);
+        });
+        
         return response;
       });
     });
