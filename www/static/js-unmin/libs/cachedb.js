@@ -92,6 +92,13 @@ function requestToEntry(request) {
   };
 }
 
+function castToRequest(request) {
+  if (!(request instanceof Request)) {
+    request = new Request(request);
+  }
+  return request;
+}
+
 function CacheDB() {
   this.db = new IDBHelper('cache-polyfill', 1, function(db, oldVersion) {
     switch (oldVersion) {
@@ -194,6 +201,9 @@ CacheDBProto._delete = function(tx, origin, cacheName, request, doneCallback, er
 
 CacheDBProto.matchAllRequests = function(origin, cacheName, request, params) {
   var matches = [];
+
+  request = castToRequest(request);
+
   return this.db.transaction('cacheEntries', function(tx) {
     this._eachMatch(tx, origin, cacheName, request, function(cursor) {
       matches.push(cursor.key);
@@ -222,6 +232,9 @@ CacheDBProto.allRequests = function(origin, cacheName) {
 
 CacheDBProto.matchAll = function(origin, cacheName, request, params) {
   var matches = [];
+
+  request = castToRequest(request);
+
   return this.db.transaction('cacheEntries', function(tx) {
     this._eachMatch(tx, origin, cacheName, request, function(cursor) {
       matches.push(cursor.value);
@@ -234,6 +247,9 @@ CacheDBProto.matchAll = function(origin, cacheName, request, params) {
 
 CacheDBProto.match = function(origin, cacheName, request, params) {
   var match;
+
+  request = castToRequest(request);
+
   return this.db.transaction('cacheEntries', function(tx) {
     this._eachMatch(tx, origin, cacheName, request, function(cursor) {
       match = cursor.value;
@@ -245,6 +261,8 @@ CacheDBProto.match = function(origin, cacheName, request, params) {
 
 CacheDBProto.matchAcrossCaches = function(origin, request, params) {
   var match;
+
+  request = castToRequest(request);
 
   return this.db.transaction(['cacheEntries', 'cacheNames'], function(tx) {
     this._eachCache(tx, origin, function(cursor) {
@@ -279,6 +297,8 @@ CacheDBProto.cacheNames = function(origin) {
 
 CacheDBProto.delete = function(origin, cacheName, request, params) {
   var returnVal;
+
+  request = castToRequest(request);
 
   return this.db.transaction('cacheEntries', function(tx) {
     this._delete(tx, origin, cacheName, request, params, function(v) {
@@ -339,7 +359,9 @@ CacheDBProto.put = function(origin, cacheName, items) {
   // items is [[request, response], [request, response], …]
   var item;
 
-  for (var i = 1; i < items.length; i++) {
+  for (var i = 0; i < items.length; i++) {
+    items[i][0] = castToRequest(items[i][0]);
+
     if (items[i][0].method != 'GET') {
       return Promise.reject(TypeError('Only GET requests are supported'));
     }

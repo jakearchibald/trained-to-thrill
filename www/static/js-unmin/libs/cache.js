@@ -1,12 +1,5 @@
 var cacheDB = require('./cachedb');
 
-function castToRequest(request) {
-  if (!(request instanceof Request)) {
-    request = new Request(request);
-  }
-  return request;
-}
-
 function Cache() {
   this._name = '';
   this._origin = '';
@@ -23,8 +16,6 @@ CacheProto.matchAll = function(request, params) {
 };
 
 CacheProto.addAll = function(requests) {
-  requests = requests.map(castToRequest);
-
   Promise.all(
     requests.map(function(request) {
       return fetch(request);
@@ -41,8 +32,6 @@ CacheProto.add = function(request) {
 };
 
 CacheProto.put = function(request, response) {
-  request = castToRequest(request);
-
   if (!(response instanceof Response)) {
     throw TypeError("Incorrect response type");
   }
@@ -51,13 +40,11 @@ CacheProto.put = function(request, response) {
 };
 
 CacheProto.delete = function(request, params) {
-  request = castToRequest(request);
   return cacheDB.delete(this._origin, this._name, request, params);
 };
 
 CacheProto.keys = function(request, params) {
   if (request) {
-    request = castToRequest(request);
     return cacheDB.matchAllRequests(this._origin, this._name, request, params);
   }
   else {
