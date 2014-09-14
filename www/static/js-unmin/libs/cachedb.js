@@ -5,8 +5,13 @@ function matchesVary(request, entryRequest, entryResponse) {
     return true;
   }
 
-  var varyHeaders = entryResponse.headers.vary.split(',');
+  var varyHeaders = entryResponse.headers.vary.toLowerCase().split(',');
   var varyHeader;
+  var requestHeaders = {};
+
+  request.headers.forEach(function(val, key) {
+    requestHeaders[key.toLowerCase()] = val;
+  });
 
   for (var i = 0; i < varyHeaders.length; i++) {
     varyHeader = varyHeaders[i].trim();
@@ -15,7 +20,7 @@ function matchesVary(request, entryRequest, entryResponse) {
       continue;
     }
 
-    if (entryRequest.headers[varyHeader] != request.headers.get(varyHeader)) {
+    if (entryRequest.headers[varyHeader] != requestHeaders[varyHeader]) {
       return false;
     }
   }
@@ -29,7 +34,7 @@ function createVaryID(entryRequest, entryResponse) {
     return id;
   }
 
-  var varyHeaders = entryResponse.headers.vary.split(',');
+  var varyHeaders = entryResponse.headers.vary.toLowerCase().split(',');
   var varyHeader;
 
   for (var i = 0; i < varyHeaders.length; i++) {
@@ -48,11 +53,11 @@ function createVaryID(entryRequest, entryResponse) {
 function flattenHeaders(headers) {
   var returnVal = {};
   headers.forEach(function(val, key) {
-    returnVal[key] = val;
+    returnVal[key.toLowerCase()] = val;
   });
 
   // so XHR can read the result (we don't have access to this header)
-  returnVal['Access-Control-Allow-Origin'] = location.origin;
+  returnVal['access-control-allow-origin'] = location.origin;
   return returnVal;
 }
 
