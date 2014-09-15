@@ -44,7 +44,7 @@ function createVaryID(entryRequest, entryResponse) {
       continue;
     }
 
-    id += varyHeader + ': ' + entryRequest.headers[varyHeader] + '\n';
+    id += varyHeader + ': ' + (entryRequest.headers[varyHeader] || '') + '\n';
   }
 
   return id;
@@ -381,8 +381,7 @@ CacheDBProto.put = function(origin, cacheName, items) {
 
   return Promise.all(
     items.map(function(item) {
-      // item[1].body.asBlob() is the old API
-      return item[1].blob ? item[1].blob() : item[1].body.asBlob();
+      return item[1].blob();
     })
   ).then(function(responseBodies) {
     return this.db.transaction(['cacheEntries', 'cacheNames'], function(tx) {
