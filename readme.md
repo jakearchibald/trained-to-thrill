@@ -31,3 +31,14 @@ First, install [node](http://nodejs.org). Then do this:
 The server will be running at
 [http://localhost:3000/trained-to-thrill/](http://localhost:3000/trained-to-thrill/
 )
+
+## Testing
+
+### Additional Prerequisites
+
+    $ sudo apt-get install python-pip  # or whatever your platform does
+    $ sudo pip install -U seleniu
+
+Download the latest release of [Chrome
+Driver](http://chromedriver.storage.googleapis.com/index.html) and put
+it somewhere on your PATH.
