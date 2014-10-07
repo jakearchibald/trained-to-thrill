@@ -1,5 +1,11 @@
 var IDBHelper = require('./idbhelper');
 
+Headers.prototype.forEach = function(f) {
+  for (var header in this) {
+    f(header[1], header[0]);
+  }
+};
+
 function matchesVary(request, entryRequest, entryResponse) {
   if (!entryResponse.headers.vary) {
     return true;
