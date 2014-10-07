@@ -1,5 +1,12 @@
 var IDBHelper = require('./idbhelper');
 
+// FIXME: Remove this when Headers becomes iterable.
+Headers.prototype.forEach = function(f) {
+  Object.keys(this).forEach(function(key) {
+    f(this[key], key);
+  }, this);
+};
+
 function matchesVary(request, entryRequest, entryResponse) {
   if (!entryResponse.headers.vary) {
     return true;
