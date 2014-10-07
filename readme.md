@@ -9,3 +9,27 @@
 1. Reload the page! OMG
 1. Try other stuff.
 1. Read the [service worker source js](https://github.com/jakearchibald/trained-to-thrill/blob/master/www/static/js-unmin/sw/index.js)
+
+## Hack on the code
+
+### Prerequisites
+
+* [Node](http://nodejs.org/)
+* [Ruby](https://www.ruby-lang.org/en/) - required for…
+* [Sass](http://sass-lang.com/) `gem install sass` (>=3.3 required)
+
+Then clone this repo & run:
+
+```sh
+npm install
+```
+
+### Running
+
+```sh
+npm start
+```
+
+The server will be running at
+[http://localhost:3000/trained-to-thrill/](http://localhost:3000/trained-to-thrill/
+)
