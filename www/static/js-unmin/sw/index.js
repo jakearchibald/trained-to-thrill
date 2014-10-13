@@ -2,8 +2,8 @@ var caches = require('../libs/caches');
 
 self.oninstall = function(event) {
   event.waitUntil(Promise.all([
-    caches.get('trains-static-v11').then(function(cache) {
-      return cache || caches.create('trains-static-v11');
+    caches.get('trains-static-v12').then(function(cache) {
+      return cache || caches.create('trains-static-v12');
     }).then(function(cache) {
       return cache.addAll([
         '/trained-to-thrill/',
@@ -23,7 +23,7 @@ self.oninstall = function(event) {
 };
 
 var expectedCaches = [
-  'trains-static-v11',
+  'trains-static-v12',
   'trains-imgs',
   'trains-data'
 ];

@@ -9,7 +9,7 @@ function matchesVary(request, entryRequest, entryResponse) {
   var varyHeader;
   var requestHeaders = {};
 
-  for (var header in request.headers) {
+  for (var header of request.headers) {
     requestHeaders[header[0].toLowerCase()] = header[1];
   }
 
@@ -53,12 +53,10 @@ function createVaryID(entryRequest, entryResponse) {
 function flattenHeaders(headers) {
   var returnVal = {};
 
-  for (var header in headers) {
+  for (var header of headers) {
     returnVal[header[0].toLowerCase()] = header[1];
   }
 
-  // so XHR can read the result (we don't have access to this header)
-  returnVal['access-control-allow-origin'] = location.origin;
   return returnVal;
 }
 
