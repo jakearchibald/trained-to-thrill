@@ -59,6 +59,8 @@ function updatePage(data) {
 function getTrainPhotoData() {
   return flickr.search('train station', {
     headers: {}
+  }).catch(function() {
+    return null;
   });
 }
 
@@ -66,10 +68,12 @@ function getCachedTrainPhotoData() {
   if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
     return flickr.search('train station', {
       headers: {'Accept': 'x-cache/only'}
+    }).catch(function() {
+      return null;
     });
   }
   else {
-    return Promise.reject(Error("No controller"));
+    return Promise.resolve(null);
   }
 }
 
@@ -103,24 +107,37 @@ refreshButton.addEventListener('click', function(event) {
 
 // Initial load
 
-var liveDataPromise = getTrainPhotoData().then(function(data) {
-  var alreadyRendered = !!photoIDsDisplayed;
-  var oldLen = photoIDsDisplayed && photoIDsDisplayed.length;
-  updatePage(data);
-  if (alreadyRendered && oldLen != photoIDsDisplayed.length) {
-    showMessage("▲ New trains ▲", 3000);
-  }
-});
-
-var cachedDataPromise = getCachedTrainPhotoData().then(function(data) {
-  if (!photoIDsDisplayed) {
+var liveDataFetched = getTrainPhotoData().then(function(data) {
+  if (data) {
+    var alreadyRendered = !!photoIDsDisplayed;
+    var oldLen = photoIDsDisplayed && photoIDsDisplayed.length;
     updatePage(data);
+    if (alreadyRendered && oldLen != photoIDsDisplayed.length) {
+      showMessage("▲ New trains ▲", 3000);
+    }
+    return true;
   }
+  return false;
 });
 
-liveDataPromise.catch(function() {
-  return cachedDataPromise;
-}).catch(showConnectionError).then(hideSpinner);
+var cachedDataFetched = getCachedTrainPhotoData().then(function(data) {
+  if (data) {
+    if (!photoIDsDisplayed) {
+      updatePage(data);
+    }
+    return true;
+  }
+  return false;
+});
+
+liveDataFetched.then(function(fetched) {
+  return fetched || cachedDataFetched;
+}).then(function(dataFetched) {
+  if (!dataFetched) {
+    showConnectionError();
+  }
+  hideSpinner();
+});
 
 // Add classes to fade-in images
 document.addEventListener('load', function(event) {
