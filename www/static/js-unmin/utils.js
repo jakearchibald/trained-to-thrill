@@ -1,3 +1,5 @@
+var Promise = require('es6-promise').Promise;
+
 function request(url, opts) {
   // Return a new promise.
   return new Promise(function(resolve, reject) {

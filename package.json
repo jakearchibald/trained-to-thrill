@@ -10,7 +10,6 @@
   "license": "ISC",
   "dependencies": {
     "browserify": "~3.31.2",
-    "rsvp": "~3.0.6",
     "gulp": "~3.8.8",
     "gulp-ruby-sass": "~0.4.0",
     "watchify": "~0.6.1",
@@ -23,7 +22,7 @@
     "handlebars": "~1.3.0",
     "hbsfy": "~1.3.2",
     "gulp-clean": "~0.2.4",
-    "es6-promise": "~1.0.0",
-    "merge-stream": "~0.1.5"
+    "merge-stream": "~0.1.5",
+    "es6-promise": "~2.0.0"
   }
 }
