@@ -137,6 +137,12 @@
     position: relative;
     padding-top: 69.15%;
     background: #E9E9E9;
+    overflow: hidden;
+
+    @supports (object-fit: cover) {
+      overflow: visible; // this saves us a lot of layer creation
+      // and we don't overflow if the images fit
+    }
     
     & .photo-fader {
       opacity: 0;
