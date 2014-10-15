@@ -66,7 +66,7 @@ function flickrAPIResponse(request) {
     return caches.match(request);
   }
   else {
-    return fetch(request.url).then(function(response) {
+    return fetch(request).then(function(response) {
       return caches.open('trains-data').then(function(cache) {
         // clean up the image cache
         Promise.all([
@@ -108,7 +108,7 @@ function flickrImageResponse(request) {
       return response;
     }
 
-    return fetch(request.url).then(function(response) {
+    return fetch(request).then(function(response) {
       caches.open('trains-imgs').then(function(cache) {
         cache.put(request, response).then(function() {
           console.log('yey img cache');
