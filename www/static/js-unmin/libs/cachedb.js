@@ -313,13 +313,16 @@ CacheDBProto.delete = function(origin, cacheName, request, params) {
   });
 };
 
-CacheDBProto.createCache = function(origin, cacheName) {
+CacheDBProto.openCache = function(origin, cacheName) {
   return this.db.transaction('cacheNames', function(tx) {
-    var store = tx.objectStore('cacheNames');
-    store.add({
-      origin: origin,
-      name: cacheName,
-      added: Date.now()
+    this._hasCache(tx, origin, cacheName, function(val) {
+      if (val) { return; }
+      var store = tx.objectStore('cacheNames');
+      store.add({
+        origin: origin,
+        name: cacheName,
+        added: Date.now()
+      });
     });
   }.bind(this), {mode: 'readwrite'});
 };

@@ -18,29 +18,14 @@ CacheStorageProto.match = function(request, params) {
   return cacheDB.matchAcrossCaches(this._origin, request, params);
 };
 
-CacheStorageProto.get = function(name) {
-  return this.has(name).then(function(hasCache) {
-    var cache;
-    
-    if (hasCache) {
-      return this._vendCache(name);
-    }
-    else {
-      return null;
-    }
-  }.bind(this));
-};
-
 CacheStorageProto.has = function(name) {
   return cacheDB.hasCache(this._origin, name);
 };
 
-CacheStorageProto.create = function(name) {
-  return cacheDB.createCache(this._origin, name).then(function() {
+CacheStorageProto.open = function(name) {
+  return cacheDB.openCache(this._origin, name).then(function() {
     return this._vendCache(name);
-  }.bind(this), function() {
-    throw Error("Cache already exists");
-  });
+  }.bind(this));
 };
 
 CacheStorageProto.delete = function(name) {

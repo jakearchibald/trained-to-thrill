@@ -2,9 +2,7 @@ var caches = require('../libs/caches');
 
 self.oninstall = function(event) {
   event.waitUntil(Promise.all([
-    caches.get('trains-static-v13').then(function(cache) {
-      return cache || caches.create('trains-static-v13');
-    }).then(function(cache) {
+    caches.open('trains-static-v13').then(function(cache) {
       return cache.addAll([
         '/trained-to-thrill/',
         '/trained-to-thrill/static/css/all.css',
@@ -12,12 +10,6 @@ self.oninstall = function(event) {
         '/trained-to-thrill/static/imgs/logo.svg',
         '/trained-to-thrill/static/imgs/icon.png'
       ]);
-    }),
-    caches.get('trains-imgs').then(function(cache) {
-      return cache || caches.create('trains-imgs');
-    }),
-    caches.get('trains-data').then(function(cache) {
-      return cache || caches.create('trains-data');
     })
   ]));
 };
@@ -75,11 +67,11 @@ function flickrAPIResponse(request) {
   }
   else {
     return fetch(request.url).then(function(response) {
-      return caches.get('trains-data').then(function(cache) {
+      return caches.open('trains-data').then(function(cache) {
         // clean up the image cache
         Promise.all([
           response.clone().json(),
-          caches.get('trains-imgs')
+          caches.open('trains-imgs')
         ]).then(function(results) {
           var data = results[0];
           var imgCache = results[1];
@@ -117,7 +109,7 @@ function flickrImageResponse(request) {
     }
 
     return fetch(request.url).then(function(response) {
-      caches.get('trains-imgs').then(function(cache) {
+      caches.open('trains-imgs').then(function(cache) {
         cache.put(request, response).then(function() {
           console.log('yey img cache');
         }, function() {
