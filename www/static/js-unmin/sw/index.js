@@ -52,10 +52,6 @@ self.onfetch = function(event) {
     event.respondWith(
       caches.match(event.request, {
         ignoreVary: true
-      }).then(function(response) {
-        if (response) {
-          return response;
-        }
       })
     );
   }
