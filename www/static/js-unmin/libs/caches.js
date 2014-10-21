@@ -36,4 +36,4 @@ CacheStorageProto.keys = function() {
   return cacheDB.cacheNames(this._origin);
 };
 
-self.cachesPolyfill = module.exports = new CacheStorage();
+module.exports = new CacheStorage();

@@ -373,6 +373,10 @@ CacheDBProto.put = function(origin, cacheName, items) {
       return Promise.reject(TypeError('Only GET requests are supported'));
     }
 
+    if (items[i][1].type == 'opaque') {
+      return Promise.reject(TypeError("The polyfill doesn't support opaque responses (from cross-origin no-cors requests)"));
+    }
+
     // ensure each entry being put won't overwrite earlier entries being put
     for (var j = 0; j < i; j++) {
       if (items[i][0].url == items[j][0].url && matchesVary(items[j][0], items[i][0], items[i][1])) {

@@ -16,7 +16,7 @@ CacheProto.matchAll = function(request, params) {
 };
 
 CacheProto.addAll = function(requests) {
-  Promise.all(
+  return Promise.all(
     requests.map(function(request) {
       return fetch(request);
     })
