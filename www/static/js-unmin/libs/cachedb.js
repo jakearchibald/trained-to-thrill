@@ -175,10 +175,8 @@ CacheDBProto._eachMatch = function(tx, origin, cacheName, request, eachCallback,
     var value = cursor.value;
     
     if (ignoreVary || matchesVary(request, cursor.value.request, cursor.value.response)) {
+      // it's down to the callback to call cursor.continue()
       eachCallback(cursor);
-    }
-    else {
-      cursor.continue();
     }
   }, doneCallback, errorCallback);
 };
@@ -196,6 +194,7 @@ CacheDBProto._delete = function(tx, origin, cacheName, request, doneCallback, er
   this._eachMatch(tx, origin, cacheName, request, function(cursor) {
     returnVal = true;
     cursor.delete();
+    cursor.continue();
   }, function() {
     if (doneCallback) {
       doneCallback(returnVal);
@@ -269,17 +268,16 @@ CacheDBProto.matchAcrossCaches = function(origin, request, params) {
   request = castToRequest(request);
 
   return this.db.transaction(['cacheEntries', 'cacheNames'], function(tx) {
-    this._eachCache(tx, origin, function(cursor) {
-      var cacheName = cursor.value.name;
+    this._eachCache(tx, origin, function(namesCursor) {
+      var cacheName = namesCursor.value.name;
 
-      this._eachMatch(tx, origin, cacheName, request, function(cursor) {
-        match = cursor.value;
-        // we're done
-      }, undefined, undefined, params);
-
-      if (!match) { // continue if no match
-        cursor.continue();
-      }
+      this._eachMatch(tx, origin, cacheName, request, function each(responseCursor) {
+        match = responseCursor.value;
+      }, function done() {
+        if (!match) {
+          namesCursor.continue();
+        }
+      }, undefined, params);
     }.bind(this));
   }.bind(this)).then(function() {
     return match ? entryToResponse(match) : undefined;
