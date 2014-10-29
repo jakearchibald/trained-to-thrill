@@ -97,7 +97,7 @@ gulp.task('build', ['clean', 'sass-build'], function() {
     '',
     'static/css/all.css',
     "static/js/page.js",
-    "static/js/sw.js",
+    "sw.js",
     "static/imgs/logo.svg",
     "static/imgs/icon.png"
   ]).pipe(writeStream);

@@ -15,7 +15,7 @@ var msgContentEl = document.querySelector('.msg');
 var photoIDsDisplayed = null;
 
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/trained-to-thrill/static/js/sw.js', {
+  navigator.serviceWorker.register('/trained-to-thrill/sw.js', {
     scope: '/trained-to-thrill/'
   }).then(function(reg) {
     console.log('◕‿◕', reg);
