@@ -1,39 +1,87 @@
-var cacheDB = require('./cachedb');
-var Cache = require('./cache');
+// Cannot feature-detect, as we have these implemented but they reject
 
-function CacheStorage() {
-  this._origin = location.origin;
+if (!Cache.prototype.add) {
+  Cache.prototype.add = function add(request) {
+    return this.addAll([request]);
+  };
 }
 
-var CacheStorageProto = CacheStorage.prototype;
+if (!Cache.prototype.addAll) {
+  Cache.prototype.addAll = function addAll(requests) {
+    var cache = this;
 
-CacheStorageProto._vendCache = function(name) {
-  var cache = new Cache();
-  cache._name = name;
-  cache._origin = this._origin;
-  return cache;
-};
+    // Since DOMExceptions are not constructable:
+    function NetworkError(message) {
+      this.name = 'NetworkError';
+      this.code = 19;
+      this.message = message;
+    }
+    NetworkError.prototype = Object.create(Error.prototype);
 
-CacheStorageProto.match = function(request, params) {
-  return cacheDB.matchAcrossCaches(this._origin, request, params);
-};
+    return Promise.resolve().then(function() {
+      if (arguments.length < 1) throw new TypeError();
+      
+      // Simulate sequence<(Request or USVString)> binding:
+      var sequence = [];
 
-CacheStorageProto.has = function(name) {
-  return cacheDB.hasCache(this._origin, name);
-};
+      requests = requests.map(function(request) {
+        if (request instanceof Request) {
+          return request;
+        }
+        else {
+          return String(request); // may throw TypeError
+        }
+      });
 
-CacheStorageProto.open = function(name) {
-  return cacheDB.openCache(this._origin, name).then(function() {
-    return this._vendCache(name);
-  }.bind(this));
-};
+      return Promise.all(
+        requests.map(function(request) {
+          if (typeof request === 'string') {
+            request = new Request(request);
+          }
 
-CacheStorageProto.delete = function(name) {
-  return cacheDB.deleteCache(this._origin, name);
-};
+          var scheme = new URL(request.url).protocol;
 
-CacheStorageProto.keys = function() {
-  return cacheDB.cacheNames(this._origin);
-};
+          if (scheme !== 'http:' && scheme !== 'https:') {
+            throw new NetworkError("Invalid scheme");
+          }
 
-module.exports = new CacheStorage();
+          return fetch(request.clone());
+        })
+      );
+    }).then(function(responses) {
+      // TODO: check that requests don't overwrite one another
+      // (don't think this is possible to polyfill due to opaque responses)
+      return Promise.all(
+        responses.map(function(response, i) {
+          return cache.put(requests[i], response);
+        })
+      );
+    }).then(function() {
+      return undefined;
+    });
+  };
+}
+
+if (!CacheStorage.prototype.match) {
+  // This is probably vulnerable to race conditions (removing caches etc)
+  CacheStorage.prototype.match = function match(request, opts) {
+    var caches = this;
+
+    return this.keys().then(function(cacheNames) {
+      var match;
+
+      return cacheNames.reduce(function(chain, cacheName) {
+        return chain.then(function() {
+          return match || caches.open(cacheName).then(function(cache) {
+            return cache.match(request, opts);
+          }).then(function(response) {
+            match = response;
+            return match;
+          });
+        });
+      }, Promise.resolve());
+    });
+  };
+}
+
+module.exports = self.caches;
