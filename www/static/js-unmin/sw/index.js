@@ -1,7 +1,7 @@
 var caches = require('../libs/caches');
 
 self.oninstall = function(event) {
-  event.waitUntil(Promise.all([
+  event.waitUntil(
     caches.open('trains-static-v14').then(function(cache) {
       return cache.addAll([
         '/trained-to-thrill/',
@@ -11,7 +11,7 @@ self.oninstall = function(event) {
         '/trained-to-thrill/static/imgs/icon.png'
       ]);
     })
-  ]));
+  );
 };
 
 var expectedCaches = [
