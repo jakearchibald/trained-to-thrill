@@ -2,12 +2,12 @@
 
 ##Instructions:
 
-1. Make sure you've enabled experimental web platform features in Chrome
+1. Open Chrome Canary
 1. Click the above link
 1. Check the console for `◕‿◕` to confirm a service worker was registered
+1. Refresh the page - you're now running offline-first!
 1. Turn off your network connection via wifi or Chrome DevTools [Device Mode](https://developer.chrome.com/devtools/docs/device-mode#network-conditions)
-1. Reload the page! OMG
-1. Try other stuff.
+1. Reload the page! OMG STILL WORKS!!!1
 1. Read the [service worker source js](https://github.com/jakearchibald/trained-to-thrill/blob/master/www/static/js-unmin/sw/index.js)
 
 ## Hack on the code
