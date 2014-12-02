@@ -4,7 +4,7 @@
   "description": "Bootstrapping projects",
   "main": "index.js",
   "scripts": {
-    "start": "./node_modules/gulp/bin/gulp.js"
+    "start": "node ./node_modules/gulp/bin/gulp.js"
   },
   "author": "",
   "license": "ISC",
