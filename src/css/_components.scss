@@ -139,10 +139,6 @@
     background: #E9E9E9;
     overflow: hidden;
 
-    @supports (object-fit: cover) {
-      overflow: visible; // this saves us a lot of layer creation
-      // and we don't overflow if the images fit
-    }
     
     & .photo-fader {
       opacity: 0;
@@ -160,11 +156,18 @@
       left: 0;
       display: block;
       width: 100%;
-      
-      @supports (object-fit: cover) {
-        height: 100%;
-        object-fit: cover;
-      }
+    }
+  }
+
+  @supports (object-fit: cover) {
+    .main-photo {
+      overflow: visible; // this saves us a lot of layer creation
+      // and we don't overflow if the images fit
+
+    }
+    .main-photo img {
+      height: 100%;
+      object-fit: cover;
     }
   }
 

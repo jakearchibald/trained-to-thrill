@@ -1,7 +1,7 @@
 {
   "name": "trained-to-thrill",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "gulp build --production",
     "build": "gulp build --production",
     "serve": "gulp serve"
   },
