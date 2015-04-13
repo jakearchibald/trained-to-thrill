@@ -1,10 +1,13 @@
 require('serviceworker-cache-polyfill');
 
+var version = 'v15';
+var staticCacheName = 'trains-static-v15';
+
 self.oninstall = function(event) {
   self.skipWaiting();
 
   event.waitUntil(
-    caches.open('trains-static-v14').then(function(cache) {
+    caches.open(staticCacheName).then(function(cache) {
       return cache.addAll([
         './',
         'css/all.css',
@@ -17,7 +20,7 @@ self.oninstall = function(event) {
 };
 
 var expectedCaches = [
-  'trains-static-v15',
+  staticCacheName,
   'trains-imgs',
   'trains-data'
 ];
