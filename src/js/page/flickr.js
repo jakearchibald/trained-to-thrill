@@ -16,7 +16,9 @@ function search(text, opts) {
     per_page: 10
   };
 
-  return utils.request(apiUrl + '?' + utils.toQuerystring(params), opts).then(JSON.parse).then(function(response) {
+  return fetch(apiUrl + '?' + utils.toQuerystring(params), opts).then(function(response) {
+    return response.json();
+  }).then(function(response) {
     if (response.stat == 'fail') {
       throw Error(response.err.msg);
     }

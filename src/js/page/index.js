@@ -1,4 +1,6 @@
 window.Promise = window.Promise || require('es6-promise').Promise;
+require('whatwg-fetch');
+
 var flickr = require('./flickr');
 var photosTemplate = require('./views/photos.hbs');
 var utils = require('./utils');
@@ -15,11 +17,7 @@ var msgContentEl = document.querySelector('.msg');
 var photoIDsDisplayed = null;
 
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./sw.js').then(function(reg) {
-    console.log('◕‿◕', reg);
-  }, function(err) {
-    console.log('ಠ_ಠ', err);
-  });
+  navigator.serviceWorker.register('./sw.js');
 }
 
 function showSpinner(data) {
@@ -65,7 +63,7 @@ function getTrainPhotoData() {
 function getCachedTrainPhotoData() {
   if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
     return flickr.search('train station', {
-      headers: {'Accept': 'x-cache/only'}
+      headers: {'x-use-cache-only': '1'}
     }).catch(function() {
       return null;
     });
@@ -106,26 +104,23 @@ refreshButton.addEventListener('click', function(event) {
 // Initial load
 
 var liveDataFetched = getTrainPhotoData().then(function(data) {
-  if (data) {
-    var alreadyRendered = !!photoIDsDisplayed;
-    var oldLen = photoIDsDisplayed && photoIDsDisplayed.length;
-    updatePage(data);
-    if (alreadyRendered && oldLen != photoIDsDisplayed.length) {
-      showMessage("▲ New trains ▲", 3000);
-    }
-    return true;
+  if (!data) return false;
+
+  var alreadyRendered = !!photoIDsDisplayed;
+  var oldLen = photoIDsDisplayed && photoIDsDisplayed.length;
+  updatePage(data);
+  if (alreadyRendered && oldLen != photoIDsDisplayed.length) {
+    showMessage("▲ New trains ▲", 3000);
   }
-  return false;
+  return true;
 });
 
 var cachedDataFetched = getCachedTrainPhotoData().then(function(data) {
-  if (data) {
-    if (!photoIDsDisplayed) {
-      updatePage(data);
-    }
-    return true;
+  if (!data) return false;
+  if (!photoIDsDisplayed) {
+    updatePage(data);
   }
-  return false;
+  return true;
 });
 
 liveDataFetched.then(function(fetched) {

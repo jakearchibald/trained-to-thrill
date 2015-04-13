@@ -1,6 +1,8 @@
 require('serviceworker-cache-polyfill');
 
 self.oninstall = function(event) {
+  self.skipWaiting();
+
   event.waitUntil(
     caches.open('trains-static-v14').then(function(cache) {
       return cache.addAll([
@@ -55,7 +57,7 @@ self.onfetch = function(event) {
 };
 
 function flickrAPIResponse(request) {
-  if (request.headers.get('Accept') == 'x-cache/only') {
+  if (request.headers.get('x-use-cache-only')) {
     return caches.match(request);
   }
   else {
