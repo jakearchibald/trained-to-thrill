@@ -4,6 +4,7 @@ require('whatwg-fetch');
 var flickr = require('./flickr');
 var photosTemplate = require('./views/photos.hbs');
 var utils = require('./utils');
+var searchTerm = 'train station';
 
 // force https
 if ((!location.port || location.port == "80") && location.protocol != 'https:') {
@@ -18,6 +19,19 @@ var photoIDsDisplayed = null;
 
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./sw.js');
+
+  // Warm up the cache on that very first use
+  if (!navigator.serviceWorker.controller) {
+    navigator.serviceWorker.addEventListener('controllerchange', function changeListener() {
+      // New worker has claimed, warm up the caches
+      flickr.search(searchTerm, {
+        headers: {'x-cache-warmup': '1'}
+      });
+
+      // We only care about this once.
+      navigator.serviceWorker.removeEventListener('controllerchange', changeListener);
+    });
+  }
 }
 
 function showSpinner(data) {
@@ -53,7 +67,7 @@ function updatePage(data) {
 }
 
 function getTrainPhotoData() {
-  return flickr.search('train station', {
+  return flickr.search(searchTerm, {
     headers: {}
   }).catch(function() {
     return null;
@@ -62,7 +76,7 @@ function getTrainPhotoData() {
 
 function getCachedTrainPhotoData() {
   if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-    return flickr.search('train station', {
+    return flickr.search(searchTerm, {
       headers: {'x-use-cache-only': '1'}
     }).catch(function() {
       return null;
