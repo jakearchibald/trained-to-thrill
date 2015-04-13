@@ -1,6 +1,2 @@
 node_modules
-www/static/js/
-www/sw.js
-.sass-cache
-www/static/css/
-www/static/css/
+dist

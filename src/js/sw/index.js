@@ -1,14 +1,14 @@
-var caches = require('../libs/caches');
+require('serviceworker-cache-polyfill');
 
 self.oninstall = function(event) {
   event.waitUntil(
     caches.open('trains-static-v14').then(function(cache) {
       return cache.addAll([
-        '/trained-to-thrill/',
-        '/trained-to-thrill/static/css/all.css',
-        '/trained-to-thrill/static/js/page.js',
-        '/trained-to-thrill/static/imgs/logo.svg',
-        '/trained-to-thrill/static/imgs/icon.png'
+        './',
+        'css/all.css',
+        'js/page.js',
+        'imgs/logo.svg',
+        'imgs/icon.png'
       ]);
     })
   );
@@ -27,10 +27,7 @@ self.onactivate = function(event) {
     caches.keys().then(function(cacheNames) {
       return Promise.all(
         cacheNames.map(function(cacheName) {
-          if (!/^trains-/.test(cacheName)) {
-            return;
-          }
-          if (expectedCaches.indexOf(cacheName) == -1) {
+          if (/^trains-/.test(cacheName) && expectedCaches.indexOf(cacheName) == -1) {
             return caches.delete(cacheName);
           }
         })

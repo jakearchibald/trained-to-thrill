@@ -1,4 +1,4 @@
-var Promise = require('es6-promise').Promise;
+window.Promise = window.Promise || require('es6-promise').Promise;
 var flickr = require('./flickr');
 var photosTemplate = require('./views/photos.hbs');
 var utils = require('./utils');
@@ -15,9 +15,7 @@ var msgContentEl = document.querySelector('.msg');
 var photoIDsDisplayed = null;
 
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/trained-to-thrill/sw.js', {
-    scope: '/trained-to-thrill/'
-  }).then(function(reg) {
+  navigator.serviceWorker.register('./sw.js').then(function(reg) {
     console.log('◕‿◕', reg);
   }, function(err) {
     console.log('ಠ_ಠ', err);

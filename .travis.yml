@@ -1,0 +1,23 @@
+# For more information about the configurations used
+# in this file, please see the Travis CI documentation:
+# http://docs.travis-ci.com
+
+after_success:
+   - curl -sSL "https://raw.githubusercontent.com/h5bp-bot/scripts/0.6.0/update_site_branch.sh" |
+         bash -s -- --commands "npm install && npm run build"
+                    --commit-message "Hey GitHub, this content is for you! [skip ci]"
+                    --directory "dist"
+                    --distribution-branch "gh-pages"
+                    --source-branch "master"
+
+env:
+  global:
+    - secure: "SRgsqz2HuSWbUbYkO6kqXMwSXNTUj0SX+FumE364cE4QnmrpajNEYJpE56ot7BlVzimSi3p75FoodY4Xj3P/0HmcSgLXqEb9ize7P2aG2YfIEDwoCtgAeW1Qphyn+I9Dy+LgoFoEUC2DxOhA5pcuwpm0oDKgUQN667DqzB6zasM="
+
+git:
+  depth: 10
+
+language: node_js
+
+node_js:
+  - "0.10"
