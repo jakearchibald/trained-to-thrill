@@ -6,7 +6,7 @@
 1. Click the above link
 1. Turn off your network connection via wifi or Chrome DevTools [Device Mode](https://developer.chrome.com/devtools/docs/device-mode#network-conditions)
 1. Reload the page! OMG STILL WORKS!!!1
-1. Read the [service worker source js](https://github.com/jakearchibald/trained-to-thrill/blob/master/www/static/js-unmin/sw/index.js)
+1. Read the [service worker source js](https://github.com/jakearchibald/trained-to-thrill/blob/master/src/js/sw/index.js)
 
 ## Hack on the code
 
