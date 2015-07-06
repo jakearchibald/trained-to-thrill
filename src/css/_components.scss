@@ -1,3 +1,20 @@
+/**
+ * Copyright 2015 Google Inc. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+
 // overall structure
   body {
     @include display-flex;
@@ -22,7 +39,7 @@
     overflow: hidden;
     position: relative;
     z-index: 10;
-    
+
     & .logo {
       margin: 5px auto;
       display: block;
@@ -49,12 +66,12 @@
       position: relative;
       width: 20px;
       height: 100%;
-      
+
       &:focus {
         outline: none;
         opacity: 0.7;
       }
-      
+
       & svg {
         position: absolute;
         top: 0;
@@ -64,7 +81,7 @@
       }
       &.loading {
         pointer-events: none;
-        
+
         & circle {
           @include animation(spin 1s infinite linear);
           stroke-dasharray: 79.33 172;
@@ -101,10 +118,10 @@
     margin: 1rem auto;
     max-width: 800px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
-    
+
     & h1 {
       margin: 0;
-      
+
       & a:link,
       & a:visited {
         color: #333;
@@ -139,7 +156,7 @@
     background: #E9E9E9;
     overflow: hidden;
 
-    
+
     & .photo-fader {
       opacity: 0;
       @include transition(opacity 0.2s ease-out);
@@ -148,7 +165,7 @@
         opacity: 1;
       }
     }
-    
+
 
     & img {
       position: absolute;
@@ -183,7 +200,7 @@
     display: none;
     opacity: 0;
     @include transition(opacity 0.5s ease-in-out);
-    
+
     &.show {
       opacity: 1;
       display: block;
