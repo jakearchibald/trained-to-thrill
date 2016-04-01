@@ -107,6 +107,7 @@
 // photo
   .photos {
     overflow-y: scroll;
+    -webkit-overflow-scrolling: touch;
     margin: 0;
     padding: 0 1rem;
     @include flex(1);
