@@ -1,6 +1,6 @@
 ## [View the Trained to Thrill demo](https://jakearchibald.github.io/trained-to-thrill/)
 
-##Instructions:
+## Instructions:
 
 1. Open Chrome
 1. Click the above link
